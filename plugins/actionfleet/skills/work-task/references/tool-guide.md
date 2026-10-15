@@ -10,6 +10,9 @@
 | Independent fan-out | `submit_task_commands` | Only if advertised; max 16 independent commands, per-task results. |
 | Result fan-in | `get_task_group` | Only if advertised; max 16 known children, per-task watermarks, no acceptance implied. |
 | Investigate/recover | `get_task_changesets` | Bounded task-local history when needed, not every poll. |
+| Bind source | `register_changeset` | While claimed; exact repo/full commit, target and supported delivery lanes. Does not push or launch. |
+| Observe delivery | `get_task_outputs`, `get_changeset_outputs` | Independent dev/iOS/Android receipts and usable artifact links; no cross-lane blocking. |
+| Manual observation | `record_changeset_output` | Source-bound, versioned evidence; explicitly harness-reported. Prefer authenticated automatic CI receipts. |
 | Diagnose runtime | `get_runtime_status` | Only for a concrete connection/runtime problem; not a setup ritual or provider quota source. |
 
 Code Mode uses `await call_tool(name, params)` inside `execute`. Batch related

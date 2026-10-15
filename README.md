@@ -83,6 +83,12 @@ ordinary chat questions do not require a coordination ceremony. The compact
 tool guide and bootstrap tool guide expose the main tools without repeated
 full discovery. Fleet owns task state; GitHub remains optional code/CI evidence.
 
+For Fleet source edits, all harnesses follow the same
+[mainline and delivery guide](https://github.com/actionfleetai/fleet/blob/main/docs/harness-mainline-workflow.md):
+checkpoint, fetch/rebase, affected checks, freshness check, guarded push, source
+registration and independent delivery receipts. The plugin points to the
+repository's canonical instructions rather than inventing a second source policy.
+
 ## Release acceptance
 
 - Confirm public onboarding, OAuth discovery, consent, revocation and account isolation.

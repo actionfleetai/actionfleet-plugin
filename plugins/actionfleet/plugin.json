@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "actionfleet",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Coordinate authorized tasks across your connected Codex and Cursor harnesses with Action Fleet.",
   "author": {
     "name": "Action Fleet",

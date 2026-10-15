@@ -7,7 +7,7 @@ description: Use when asked to pick up, implement, resume, stop, or report an Ac
 
 Use Fleet when the user asks to coordinate or execute a tracked task. Ordinary
 questions and tiny local edits do not need invented task hierarchies or duplicate
-GitHub records. Fleet owns task state; GitHub is optional source/PR/CI evidence.
+GitHub records. Fleet owns task state; GitHub is optional source/CI evidence.
 Do not create issue mirrors, Project cards, task labels or callback comments.
 
 ## Fast path
@@ -29,6 +29,25 @@ Batch related native calls in one Code Mode `execute` block when supported.
 Return only relevant IDs, state, blockers and next action; avoid dumping histories.
 For independent fan-out/fan-in, use the coordinate skill and the server's bounded
 batch/group tools if advertised. See [the compact tool guide](references/tool-guide.md).
+
+## Source integration and delivery
+
+Follow the target repository's source policy. For `actionfleetai/fleet`, use the
+[canonical harness workflow](https://github.com/actionfleetai/fleet/blob/main/docs/harness-mainline-workflow.md):
+local checkpoint commit, fetch main, rebase if needed, affected checks, fetch again
+and repeat when main advances. `node scripts/mainline.mjs prepare` bounds that
+loop to three passes. Enable the repository's pre-push hook without replacing
+other hooks; recheck live Fleet claim/STOP before a normal direct-main push.
+Validate the final rebased source; never reuse a check from an earlier source or
+force-push through a race. Other repositories need their own explicit policy.
+
+Discover `register_changeset`, `get_task_outputs`, `get_changeset_outputs` and
+`record_changeset_output` when delivery is in scope. Register the exact repository,
+full commit, target and requested lanes while claimed. Registration does not land
+source or launch a build. Read authenticated CI receipts; manual evidence stays
+harness-reported. Return the dev link when ready while iOS/Android proceed
+independently. Upload receipt, store processing and human acceptance are distinct.
+Do not rebuild or reupload a successful lane just to retry its receipt publisher.
 
 ## Recovery and authority
 

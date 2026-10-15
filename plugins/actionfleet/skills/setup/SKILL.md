@@ -14,7 +14,8 @@ Never treat sandbox CLI configuration as proof that a hosted cloud chat is conne
 Call `bootstrap_harness` with the current harness name, observed version (or
 `unknown`), a stable non-secret session ID, and only the capabilities its schema
 supports. Use the actual harness (`codex-cloud`, `codex`, `cursor`, or
-`cursor-cloud` when supported by the deployed schema). Advertise only model IDs
+`cursor-cloud`, `claude-code` or `claude-code-cloud` when supported by the deployed
+schema). Advertise only model IDs
 and work capabilities actually available in this session when those parameters
 are exposed. Preserve the distinction between a client report and provider proof.
 An unsupported/incomplete response needs one concrete setup action.

@@ -13,8 +13,11 @@ Never treat sandbox CLI configuration as proof that a hosted cloud chat is conne
 
 Call `bootstrap_harness` with the current harness name, observed version (or
 `unknown`), a stable non-secret session ID, and only the capabilities its schema
-supports. Phase 1 supports `codex-cloud`. Other harnesses must receive an honest
-unsupported/incomplete result until the server supports them.
+supports. Use the actual harness (`codex-cloud`, `codex`, `cursor`, or
+`cursor-cloud` when supported by the deployed schema). Advertise only model IDs
+and work capabilities actually available in this session when those parameters
+are exposed. Preserve the distinction between a client report and provider proof.
+An unsupported/incomplete response needs one concrete setup action.
 
 If Code Mode exposes discovery and `execute`, discover the bootstrap schema and
 invoke it through the documented `await call_tool(name, params)` interface.
@@ -46,3 +49,18 @@ step, not invented compatibility commands or a repeated setup-prompt loop.
 Perform an authorized bounded canary only when the user requested testing.
 Distinguish native tool use from raw HTTP tests, completion from acceptance,
 and saved waits from registered background wakes.
+
+
+## Keep setup short
+
+Bootstrap once per session/reconnect, then cache the discovered schemas for the
+current deployment. Batch bootstrap and schema discovery in a single Code Mode
+call where supported; bootstrap recovery already includes current claims.
+Read `tool_guide` for the principal tools and supported execution path. Do not
+probe every tool or repeat unchanged checks as a prerequisite to each task.
+
+When ready, continue the user's authorized work using `work-task`; use
+`coordinate` for independent parallel tasks. A recorded connection proves an MCP
+round trip, not an installed launcher. If no receiving worker or native launch
+path exists, provide one host-specific resume/setup step and report that blocker.
+Do not silently leave the user believing a queued task was dispatched.

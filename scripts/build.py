@@ -9,7 +9,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'plugins/actionfleet'
-FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md'}
+FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md',
+         'skills/coordinate/SKILL.md', 'skills/work-task/references/tool-guide.md'}
 
 
 def endpoint(value):

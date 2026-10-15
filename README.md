@@ -1,7 +1,7 @@
 # Action Fleet Plugin
 
 Public installation resources for connecting an AI harness to Action Fleet:
-guided setup skills, the MCP connection package, and vendor compatibility
+guided setup, task execution and parallel coordination skills, the MCP connection package, and vendor compatibility
 manifests. Work runs in the user's harness; Action Fleet coordinates durable
 tasks through its authenticated MCP service.
 
@@ -72,9 +72,16 @@ task access requires OAuth and the applicable server-side authorization. Missing
 setup should lead to a concrete next action, never a request to paste passwords,
 provider keys or access tokens into chat.
 
-Phase 1 validates Codex cloud. A second Codex subscription is Phase 2. Cursor is
-Phase 3. Claude packaging is prepared for compatibility testing; it does not
-establish a validated Claude execution harness or combine subscription allowances.
+The skills cover Codex and Cursor through the same discovered task protocol.
+Actual host installation, execution and native launch/resume must be tested
+separately. Claude packaging remains compatibility preparation. No package pools
+subscription allowances or supplies a launcher merely by being installed.
+
+Use `setup` for connection/readiness, `work-task` for execution/recovery, and
+`coordinate` for independent fan-out/fan-in. Each skill has a specific trigger;
+ordinary chat questions do not require a coordination ceremony. The compact
+tool guide and bootstrap tool guide expose the main tools without repeated
+full discovery. Fleet owns task state; GitHub remains optional code/CI evidence.
 
 ## Release acceptance
 

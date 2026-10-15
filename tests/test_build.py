@@ -33,6 +33,8 @@ class PackageTests(unittest.TestCase):
                 self.assertIn('actionfleet/mcp.json', names)
                 self.assertIn('actionfleet/LICENSE', names)
                 self.assertIn('actionfleet/skills/setup/SKILL.md', names)
+                self.assertIn('actionfleet/skills/coordinate/SKILL.md', names)
+                self.assertIn('actionfleet/skills/work-task/references/tool-guide.md', names)
                 self.assertFalse(any('/.git/' in n or n.endswith('.env') for n in names))
             with self.assertRaises(ValueError):
                 module.build('https://mcp.example.com/mcp', root)

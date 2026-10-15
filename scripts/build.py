@@ -37,11 +37,20 @@ def build(url, output, source=SOURCE):
     manifest = json.loads((source / 'plugin.json').read_text())
     plugin = output / 'plugins/actionfleet'
     shutil.copytree(source, plugin)
+    public_url = url[:-4] + '/public/mcp'
     write(plugin / 'mcp.json', {
         '$schema': 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
-        'mcpServers': {'actionfleet': {'type': 'streamable-http', 'url': url}},
+        'mcpServers': {
+            'actionfleet-setup': {'type': 'streamable-http', 'url': public_url,
+                                 'extensions': {'com.openai': {'auth': {'type': 'none'}}}},
+            'actionfleet': {'type': 'streamable-http', 'url': url,
+                            'extensions': {'com.openai': {'auth': {'type': 'oauth', 'client': {'mode': 'dcr'}}}}},
+        },
     })
-    write(plugin / '.mcp.json', {'mcpServers': {'actionfleet': {'type': 'http', 'url': url}}})
+    write(plugin / '.mcp.json', {'mcpServers': {
+        'actionfleet-setup': {'type': 'http', 'url': public_url},
+        'actionfleet': {'type': 'http', 'url': url},
+    }})
     write(plugin / '.claude-plugin/plugin.json', {k: manifest[k] for k in
           ('name', 'version', 'description', 'author', 'homepage', 'repository', 'keywords')})
     write(output / '.agents/plugins/marketplace.json', {
@@ -51,6 +60,7 @@ def build(url, output, source=SOURCE):
     })
     write(output / '.claude-plugin/marketplace.json', {
         'name': 'actionfleet', 'owner': {'name': 'Action Fleet'},
+        'description': 'Action Fleet harness setup and durable task coordination.',
         'plugins': [{'name': 'actionfleet', 'source': './plugins/actionfleet', 'description': manifest['description']}],
     })
     archive = output / f"actionfleet-{manifest['version']}.zip"

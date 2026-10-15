@@ -15,6 +15,10 @@ or marketplace approval is implied by this repository.
 OpenAI extension declares the setup skill. The build creates the portable
 `mcp.json`, Claude's `.mcp.json` and `.claude-plugin/plugin.json`, plus both
 marketplace catalogs from that source. Skills are shared rather than forked.
+Generated packages declare both public onboarding (`/public/mcp`, no application
+authentication) and authorized work (`/mcp`, OAuth discovery and DCR). Host support
+for onboarding before the private connection completes must be tested; public
+onboarding can also be connected separately during account setup.
 
 No account credentials, infrastructure secrets, customer data, backend source,
 or privileged execution hooks belong in this repository. Installation does not

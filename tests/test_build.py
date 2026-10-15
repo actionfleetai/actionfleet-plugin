@@ -23,6 +23,9 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(portable['mcpServers']['actionfleet']['url'], claude['mcpServers']['actionfleet']['url'])
             self.assertEqual(portable['mcpServers']['actionfleet']['type'], 'streamable-http')
             self.assertEqual(claude['mcpServers']['actionfleet']['type'], 'http')
+            self.assertEqual(portable['mcpServers']['actionfleet-setup']['url'], 'https://mcp.example.com/public/mcp')
+            self.assertEqual(portable['mcpServers']['actionfleet']['extensions']['com.openai']['auth']['type'], 'oauth')
+            self.assertEqual(portable['mcpServers']['actionfleet-setup']['extensions']['com.openai']['auth']['type'], 'none')
             for path in ['.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json']:
                 self.assertEqual(json.loads((root / path).read_text())['plugins'][0]['name'], 'actionfleet')
             with zipfile.ZipFile(archive) as z:

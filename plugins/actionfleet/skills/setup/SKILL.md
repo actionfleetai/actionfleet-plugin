@@ -36,6 +36,13 @@ secret/connection settings and browser consent. Installation is not permission
 to broaden account/cloud access, activate paid workers, merge source or release.
 
 When required checks succeed, report the ready profile and remaining optional
-items. Perform an authorized bounded canary only when the user requested testing.
+items. Check the returned protocol before selecting the work workflow. For
+`actionfleet/1`, inspect `get_protocol_schema`, the verified worker/scope and any
+current-claims recovery page. Worker identity is bound to the authenticated
+connection; session/harness labels are observations, not isolation or proof of a
+subscription entitlement. A protocol/deployment mismatch needs a concrete operator
+step, not invented compatibility commands or a repeated setup-prompt loop.
+
+Perform an authorized bounded canary only when the user requested testing.
 Distinguish native tool use from raw HTTP tests, completion from acceptance,
 and saved waits from registered background wakes.

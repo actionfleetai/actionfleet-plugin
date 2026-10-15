@@ -59,6 +59,13 @@ The bundled skill discovers `bootstrap_harness`, supplies the actual harness nam
 and observed version, and guides the user through required setup. Optional
 capabilities remain visible without blocking the basic task profile.
 
+The work skill targets `actionfleet/1` and reads exact command data schemas
+through `get_protocol_schema`. It covers connection-bound claim recovery,
+guarded waiting/report/release, cooperative STOP and human verification of an
+exact report/artifact. Check bootstrap protocol and deployment provenance before
+using it. Updating this authoring source does not establish live/native release
+acceptance or upgrade a running server.
+
 The MCP has distinct public onboarding and account-authorized surfaces. Public
 onboarding can link to signup/signin and explain the connection process; private
 task access requires OAuth and the applicable server-side authorization. Missing

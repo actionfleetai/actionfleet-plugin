@@ -31,6 +31,7 @@ class PackageTests(unittest.TestCase):
             with zipfile.ZipFile(archive) as z:
                 names = z.namelist()
                 self.assertIn('actionfleet/mcp.json', names)
+                self.assertIn('actionfleet/LICENSE', names)
                 self.assertIn('actionfleet/skills/setup/SKILL.md', names)
                 self.assertFalse(any('/.git/' in n or n.endswith('.env') for n in names))
             with self.assertRaises(ValueError):

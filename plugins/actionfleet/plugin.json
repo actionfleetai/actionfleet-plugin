@@ -6,6 +6,7 @@
   "author": {"name": "Action Fleet", "url": "https://actionfleet.ai"},
   "homepage": "https://actionfleet.ai",
   "repository": "https://github.com/actionfleetai/actionfleet-plugin",
+  "license": "MIT",
   "keywords": ["coordination", "mcp", "harness"],
   "extensions": {
     "com.openai": {

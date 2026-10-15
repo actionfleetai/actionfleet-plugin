@@ -37,6 +37,7 @@ def build(url, output, source=SOURCE):
     manifest = json.loads((source / 'plugin.json').read_text())
     plugin = output / 'plugins/actionfleet'
     shutil.copytree(source, plugin)
+    shutil.copyfile(ROOT / 'LICENSE', plugin / 'LICENSE')
     public_url = url[:-4] + '/public/mcp'
     write(plugin / 'mcp.json', {
         '$schema': 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
@@ -52,7 +53,7 @@ def build(url, output, source=SOURCE):
         'actionfleet': {'type': 'http', 'url': url},
     }})
     write(plugin / '.claude-plugin/plugin.json', {k: manifest[k] for k in
-          ('name', 'version', 'description', 'author', 'homepage', 'repository', 'keywords')})
+          ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')})
     write(output / '.agents/plugins/marketplace.json', {
         'name': 'actionfleet', 'interface': {'displayName': 'Action Fleet Plugins'},
         'plugins': [{'name': 'actionfleet', 'source': {'source': 'local', 'path': './plugins/actionfleet'},

@@ -13,3 +13,14 @@ jobs:
         with:
           python-version: '3.14'
       - run: python -m unittest discover -s tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build a synthetic endpoint package for structural validation
+        run: python scripts/build.py --mcp-url https://mcp.example.com/mcp --output "$RUNNER_TEMP/actionfleet-validation"
+      - name: Validate Claude compatibility without connecting an account
+        env:
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/claude-plugin-validation
+        run: |
+          npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate "$RUNNER_TEMP/actionfleet-validation/plugins/actionfleet" --strict
+          npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate "$RUNNER_TEMP/actionfleet-validation" --strict

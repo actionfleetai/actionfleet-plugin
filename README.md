@@ -82,3 +82,5 @@ Sources: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/p
 [OpenAI connection testing](https://developers.openai.com/plugins/deploy/connect-chatgpt),
 [Claude manifest reference](https://code.claude.com/docs/en/plugins-reference), and
 [Claude marketplaces](https://code.claude.com/docs/en/plugin-marketplaces).
+
+Licensed under the [MIT License](LICENSE).

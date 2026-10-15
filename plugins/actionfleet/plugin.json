@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "actionfleet",
+  "version": "0.1.0-alpha.1",
+  "description": "Connect your AI harness to Action Fleet and coordinate durable work.",
+  "author": {"name": "Action Fleet", "url": "https://actionfleet.ai"},
+  "homepage": "https://actionfleet.ai",
+  "repository": "https://github.com/actionfleetai/actionfleet-plugin",
+  "keywords": ["coordination", "mcp", "harness"],
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/setup/SKILL.md",
+      "interface": {
+        "displayName": "Action Fleet",
+        "shortDescription": "Connect your harness and coordinate work",
+        "developerName": "Action Fleet",
+        "category": "Productivity",
+        "websiteURL": "https://actionfleet.ai",
+        "privacyPolicyURL": "https://actionfleet.ai/privacy",
+        "termsOfServiceURL": "https://actionfleet.ai/terms",
+        "defaultPrompt": ["Set up this harness for Action Fleet."]
+      }
+    }
+  }
+}

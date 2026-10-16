@@ -9,7 +9,7 @@ a stopped chat or pool subscription allowances.
 
 | Package | Stable MCP URL | Availability |
 | --- | --- | --- |
-| Action Fleet Dev (`actionfleet-dev`) | `https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp` | Active dev; native Codex and Claude cloud reported; Cursor acceptance pending |
+| Action Fleet Dev (`actionfleet-dev`) | `https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp` | Active dev; native Codex, Claude and Cursor cloud task loops reported |
 | Action Fleet (`actionfleet`) | `https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp` | Prepared production profile; unavailable until OAuth activation and acceptance |
 
 These are the untagged Cloud Run **service** URLs. Their traffic moves to each
@@ -123,6 +123,13 @@ schemas. Use `work-task` to discover/claim/checkpoint/report authorized work and
 recovery and a tool guide. Preserve claim/STOP checks and human verification of an
 exact report. GitHub is source/CI, not Fleet's coordination queue. Normal chat
 questions do not need a task ceremony.
+
+Bootstrap with the actual harness **before the first claim**, including
+`cursor-cloud` for Cursor Cloud Agents. If a connection's harness label is wrong,
+rerun bootstrap from that same harness with the correct name; recreating OAuth
+is unnecessary. The worker identity belongs to the authenticated connection;
+harness/version/session labels are client observations. Historical task reports
+retain the labels recorded when those events happened.
 
 ## Build, verify and release
 

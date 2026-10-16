@@ -77,6 +77,8 @@ For a team marketplace, open Dashboard → **Plugins & MCPs** → Team Marketpla
 Dev**, save access settings, and install it from Cursor's plugin UI. Enable
 **Auto Refresh** for the GitHub import; the Cursor GitHub App needs access to this
 public repository. Refresh the marketplace manually if that option is unavailable.
+Cursor batches automatic re-indexing to at most once every ten minutes; use
+**Refresh** when testing a just-pushed package.
 Cloud Agents must also have the MCP/connector available in their own environment.
 
 For the standalone cloud path, add the stable dev URL under **Team MCP Servers**

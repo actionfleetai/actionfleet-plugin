@@ -8,6 +8,7 @@ import tempfile
 import zipfile
 
 from build import ROOT, build, endpoint
+from release_version import read_release
 
 CATALOGS = ('.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json',
             '.cursor-plugin/marketplace.json')
@@ -38,6 +39,10 @@ def encoded(value):
 
 def generated(rows=None):
     rows = profiles() if rows is None else rows
+    release = read_release()
+    manifest = json.loads((Path(__file__).resolve().parents[1] / 'plugins/actionfleet/plugin.json').read_text())
+    if manifest['version'] != release['version']:
+        raise ValueError('Plugin version differs from the release date/build; run release_version.py bump.')
     files = {}
     entries = []
     for p in rows:
@@ -45,7 +50,9 @@ def generated(rows=None):
             package = Path(tmp) / 'package'
             build(p['mcp_url'], package, name=p['name'], display_name=p['display_name'])
             root = package / 'plugins/actionfleet'
-            meta = {**p, 'plugin_version': json.loads((root / 'plugin.json').read_text())['version']}
+            meta = {**p, 'plugin_version': release['version'], 'release_date': release['date'],
+                    'release_build': release['build'], 'release_label': release['label'],
+                    'release_timezone': release['timezone']}
             files[f"packages/{p['name']}/skills/setup/references/installation.json"] = encoded(meta)
             for file in sorted(root.rglob('*')):
                 if file.is_file():

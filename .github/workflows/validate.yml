@@ -57,6 +57,9 @@ jobs:
     needs: [validate, endpoints]
     if: github.ref == 'refs/heads/main' && github.repository == 'actionfleetai/actionfleet-plugin'
     runs-on: ubuntu-latest
+    concurrency:
+      group: actionfleet-plugin-release
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -75,9 +78,10 @@ jobs:
         run: |
           set -euo pipefail
           version=$(python3 -c 'import json; print(json.load(open("plugins/actionfleet/plugin.json"))["version"])')
+          label=$(python3 scripts/release_version.py --field label)
           tag="v$version"
           if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
-            git diff --exit-code "$tag" -- plugins packages profiles.json scripts/build.py scripts/catalog.py .agents .claude-plugin .cursor-plugin
+            git diff --exit-code "$tag" -- plugins packages profiles.json release.json scripts/build.py scripts/catalog.py scripts/release_version.py .agents .claude-plugin .cursor-plugin
           fi
           if gh release view "$tag" >/dev/null 2>&1; then
             mkdir previous-release
@@ -85,6 +89,6 @@ jobs:
             cmp previous-release/SHA256SUMS release/SHA256SUMS
           else
             gh release create "$tag" release/* --target "$GITHUB_SHA" --prerelease \
-              --title "Action Fleet $version" \
+              --title "Action Fleet $label" \
               --notes 'Install Action Fleet Dev from the Git marketplace. Production is prepared but unavailable until its OAuth and native acceptance pass. Includes shared setup/task/coordination skills, vendor manifests, deterministic ZIP and SHA-256 sums. See README for installation and update controls.'
           fi

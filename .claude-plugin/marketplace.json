@@ -9,7 +9,7 @@
       "name": "actionfleet-dev",
       "source": "./packages/actionfleet-dev",
       "description": "Action Fleet task coordination: Action Fleet Dev",
-      "version": "0.1.0-alpha.4"
+      "version": "2026.1015.1"
     }
   ]
 }

@@ -135,8 +135,20 @@ python3 scripts/catalog.py --check
 python3 scripts/catalog.py --archives /tmp/actionfleet-release
 ```
 
-Never hand-edit generated packages. Bump `plugins/actionfleet/plugin.json`'s
-version whenever package contents change. CI checks generated drift, package
+Never hand-edit generated packages. Before a package release, run
+`python3 scripts/release_version.py bump` after fetching/rebasing main. It updates
+`release.json`, the canonical manifest and generated packages together. Releases
+use the **Los Angeles date plus build**, matching the mobile date convention:
+`2026.10.15 (1)` is plugin version `2026.1015.1` (`year.monthday.build`). Build 2
+is `2026.1015.2`; October 16 build 1 is `2026.1016.1`. January 5 uses `2026.105.1`
+without a leading zero, preserving valid semantic version ordering. The plugin's
+counter is independent of each mobile app's store counter. `+build` metadata is
+not used for ordering because semantic version comparisons ignore it.
+
+Same-day releases increment the build; a new Los Angeles date starts at build 1.
+The saved identity is used throughout CI, even across midnight. Fetch/rebase
+before allocating; conflicting releases must allocate another build, never
+overwrite an existing tag. CI checks date/version consistency, generated drift, package
 isolation and reproducibility, validates the real packages/catalog with Claude's
 CLI, and anonymously probes each configured endpoint. Active profiles must pass
 discovery/issuer/resource/PKCE/auth-challenge checks. Inactive production failures
@@ -153,7 +165,7 @@ profile is activated. Prepared production files are for operator review.
 To activate production, first verify production Firebase/account scope, OAuth
 issuer/resource, intended callback allowlist, durable storage and native harness
 canary through the separate production rollout. Then set `installable: true`,
-bump the plugin version, regenerate and publish. No dev account identifiers,
+allocate a new date/build release, regenerate and publish. No dev account identifiers,
 tokens, task IDs or callbacks are automatically copied into production.
 
 Sources: [OpenAI packaging](https://developers.openai.com/plugins/build/plugins),

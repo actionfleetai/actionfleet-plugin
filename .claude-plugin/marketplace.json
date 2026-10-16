@@ -3,6 +3,7 @@
   "owner": {
     "name": "Action Fleet"
   },
+  "description": "Action Fleet harness setup and durable task coordination.",
   "plugins": [
     {
       "name": "actionfleet-dev",

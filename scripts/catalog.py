@@ -61,7 +61,8 @@ def generated(rows=None):
                     for p, e in zip(rows, entries)],
     })
     active = [e for p, e in zip(rows, entries) if p['installable']]
-    common = {'name': 'actionfleet', 'owner': {'name': 'Action Fleet'}, 'plugins': active}
+    common = {'name': 'actionfleet', 'owner': {'name': 'Action Fleet'},
+              'description': 'Action Fleet harness setup and durable task coordination.', 'plugins': active}
     files[CATALOGS[1]] = encoded(common)
     files[CATALOGS[2]] = encoded(common)
     return files

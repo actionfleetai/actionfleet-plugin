@@ -41,6 +41,16 @@ other hooks; recheck live Fleet claim/STOP before a normal direct-main push.
 Validate the final rebased source; never reuse a check from an earlier source or
 force-push through a race. Other repositories need their own explicit policy.
 
+Use the human author/committer identity specified by the user or target repository
+for agent-prepared commits. Credit the actual assisting agent/model with an
+optional documented `Co-authored-by` trailer, or an `Agent-Harness` trailer without
+inventing a provider email. Keep that attribution secondary; a harness Stop hook
+or an Unverified badge is not a reason to replace the user's identity with an
+agent/bot. Signing verification is independent of authorship: preserve signing
+settings, inspect the actual reason, and report a key/setup blocker accurately.
+Preserve other contributors' authorship and published history. Correct a user's
+unpublished commit only within their authorized scope, then revalidate its new SHA.
+
 Discover `register_changeset`, `get_task_outputs`, `get_changeset_outputs` and
 `record_changeset_output` when delivery is in scope. Register the exact repository,
 full commit, target and requested lanes while claimed. Registration does not land

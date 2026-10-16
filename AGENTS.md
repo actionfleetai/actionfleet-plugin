@@ -6,6 +6,13 @@ live claim and isolated workspace per attempt. GitHub holds source and CI, not a
 second task queue. Preserve claim/STOP checks before shared writes. Do not create
 PRs or GitHub issues for coordination.
 
+For agent-prepared commits to this repository, use Bourke Floyd
+<chbfiv@gmail.com> as both Git author and committer. Optional secondary agent credit
+belongs in an accurate `Co-authored-by` or `Agent-Harness` trailer. Keep signing
+policy separate; never re-author as a provider bot to satisfy a Stop hook or obtain
+a Verified badge, and do not rewrite published history. Installed skills must
+follow each user's own repository identity policy, not hardcode Bourke's identity.
+
 The skill source is `plugins/actionfleet/`; edit it, not generated `packages/`.
 `profiles.json` owns stable dev/prod connection identities and availability. Do
 not enable production just because a service URL exists. Public resources must

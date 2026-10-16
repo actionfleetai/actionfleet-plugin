@@ -1,0 +1,17 @@
+{
+  "name": "actionfleet",
+  "version": "0.1.0-alpha.4",
+  "description": "Coordinate authorized tasks across your connected Codex, Claude and Cursor harnesses with Action Fleet.",
+  "author": {
+    "name": "Action Fleet",
+    "url": "https://actionfleet.ai"
+  },
+  "homepage": "https://actionfleet.ai",
+  "repository": "https://github.com/actionfleetai/actionfleet-plugin",
+  "license": "MIT",
+  "keywords": [
+    "coordination",
+    "mcp",
+    "harness"
+  ]
+}

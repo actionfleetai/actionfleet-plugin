@@ -1,0 +1,9 @@
+{
+  "channel": "dev",
+  "name": "actionfleet-dev",
+  "display_name": "Action Fleet Dev",
+  "mcp_url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp",
+  "installable": true,
+  "protocol": "actionfleet/1",
+  "plugin_version": "0.1.0-alpha.4"
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "actionfleet-setup": {
+      "type": "http",
+      "url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/public/mcp"
+    },
+    "actionfleet": {
+      "type": "http",
+      "url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp"
+    }
+  }
+}

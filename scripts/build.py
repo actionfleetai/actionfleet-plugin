@@ -27,7 +27,7 @@ def write(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
 
 
-def build(url, output, source=SOURCE):
+def build(url, output, source=SOURCE, *, name=None, display_name=None):
     url = endpoint(url)
     actual = {p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()}
     if actual != FILES or any(p.is_symlink() for p in source.rglob('*')):
@@ -36,36 +36,48 @@ def build(url, output, source=SOURCE):
     if output.exists():
         raise ValueError('Choose a new output directory; existing files are never replaced.')
     manifest = json.loads((source / 'plugin.json').read_text())
+    if name:
+        if name not in {'actionfleet', 'actionfleet-dev'}:
+            raise ValueError('Unknown plugin identity.')
+        manifest['name'] = name
+    name = manifest['name']
+    if display_name:
+        manifest['extensions']['com.openai']['interface']['displayName'] = display_name
     plugin = output / 'plugins/actionfleet'
     shutil.copytree(source, plugin)
+    write(plugin / 'plugin.json', manifest)
     shutil.copyfile(ROOT / 'LICENSE', plugin / 'LICENSE')
     public_url = url[:-4] + '/public/mcp'
     write(plugin / 'mcp.json', {
         '$schema': 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
         'mcpServers': {
-            'actionfleet-setup': {'type': 'streamable-http', 'url': public_url,
+            name + '-setup': {'type': 'streamable-http', 'url': public_url,
                                  'extensions': {'com.openai': {'auth': {'type': 'none'}}}},
-            'actionfleet': {'type': 'streamable-http', 'url': url,
+            name: {'type': 'streamable-http', 'url': url,
                             'extensions': {'com.openai': {'auth': {'type': 'oauth', 'client': {'mode': 'dcr'}}}}},
         },
     })
     write(plugin / '.mcp.json', {'mcpServers': {
-        'actionfleet-setup': {'type': 'http', 'url': public_url},
-        'actionfleet': {'type': 'http', 'url': url},
+        name + '-setup': {'type': 'http', 'url': public_url},
+        name: {'type': 'http', 'url': url},
     }})
     write(plugin / '.claude-plugin/plugin.json', {k: manifest[k] for k in
           ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')})
+    write(plugin / '.cursor-plugin/plugin.json', {
+        **{k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')},
+        'displayName': display_name or manifest['extensions']['com.openai']['interface']['displayName'],
+    })
     write(output / '.agents/plugins/marketplace.json', {
         'name': 'actionfleet', 'interface': {'displayName': 'Action Fleet Plugins'},
-        'plugins': [{'name': 'actionfleet', 'source': {'source': 'local', 'path': './plugins/actionfleet'},
+        'plugins': [{'name': name, 'source': {'source': 'local', 'path': './plugins/actionfleet'},
                      'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}],
     })
     write(output / '.claude-plugin/marketplace.json', {
         'name': 'actionfleet', 'owner': {'name': 'Action Fleet'},
         'description': 'Action Fleet harness setup and durable task coordination.',
-        'plugins': [{'name': 'actionfleet', 'source': './plugins/actionfleet', 'description': manifest['description']}],
+        'plugins': [{'name': name, 'source': './plugins/actionfleet', 'description': manifest['description']}],
     })
-    archive = output / f"actionfleet-{manifest['version']}.zip"
+    archive = output / f"{name}-{manifest['version']}.zip"
     with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
         for file in sorted(p for p in plugin.rglob('*') if p.is_file()):
             info = zipfile.ZipInfo('actionfleet/' + file.relative_to(plugin).as_posix(), date_time=(1980, 1, 1, 0, 0, 0))

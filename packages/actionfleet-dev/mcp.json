@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "actionfleet-dev-setup": {
+      "type": "streamable-http",
+      "url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/public/mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "none"
+          }
+        }
+      }
+    },
+    "actionfleet-dev": {
+      "type": "streamable-http",
+      "url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "client": {
+              "mode": "dcr"
+            }
+          }
+        }
+      }
+    }
+  }
+}

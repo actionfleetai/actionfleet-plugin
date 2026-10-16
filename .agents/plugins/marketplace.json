@@ -1,0 +1,32 @@
+{
+  "name": "actionfleet",
+  "interface": {
+    "displayName": "Action Fleet Plugins"
+  },
+  "plugins": [
+    {
+      "name": "actionfleet-dev",
+      "source": {
+        "source": "local",
+        "path": "./packages/actionfleet-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "actionfleet",
+      "source": {
+        "source": "local",
+        "path": "./packages/actionfleet"
+      },
+      "policy": {
+        "installation": "NOT_AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

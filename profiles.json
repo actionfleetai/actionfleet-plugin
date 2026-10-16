@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "profiles": [
+    {
+      "channel": "dev",
+      "name": "actionfleet-dev",
+      "display_name": "Action Fleet Dev",
+      "mcp_url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp",
+      "installable": true,
+      "protocol": "actionfleet/1"
+    },
+    {
+      "channel": "prod",
+      "name": "actionfleet",
+      "display_name": "Action Fleet",
+      "mcp_url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp",
+      "installable": false,
+      "protocol": "actionfleet/1"
+    }
+  ]
+}

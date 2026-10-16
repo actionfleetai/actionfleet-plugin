@@ -1,106 +1,163 @@
-# Action Fleet Plugin
+# Action Fleet plugins
 
-Public installation resources for connecting an AI harness to Action Fleet:
-guided setup, task execution and parallel coordination skills, the MCP connection package, and vendor compatibility
-manifests. Work runs in the user's harness; Action Fleet coordinates durable
-tasks through its authenticated MCP service.
+Install **Action Fleet Dev** to connect Codex, Claude Code or Cursor to the same
+durable coordination service. Work runs in your harness. Fleet records tasks,
+claims, progress and independent delivery outputs; installation does not launch
+a stopped chat or pool subscription allowances.
 
-This is an authoring scaffold. A verified MCP endpoint and real host acceptance
-are required before publishing an installable release. No functioning server URL
-or marketplace approval is implied by this repository.
+## Stable connections
 
-## Package layout
+| Package | Stable MCP URL | Availability |
+| --- | --- | --- |
+| Action Fleet Dev (`actionfleet-dev`) | `https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp` | Active dev; native Codex and Claude cloud reported; Cursor acceptance pending |
+| Action Fleet (`actionfleet`) | `https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp` | Prepared production profile; unavailable until OAuth activation and acceptance |
 
-`plugins/actionfleet/` is the canonical portable plugin and skill source. The
-OpenAI extension declares the setup skill. The build creates the portable
-`mcp.json`, Claude's `.mcp.json` and `.claude-plugin/plugin.json`, plus both
-marketplace catalogs from that source. Skills are shared rather than forked.
-Generated packages declare both public onboarding (`/public/mcp`, no application
-authentication) and authorized work (`/mcp`, OAuth discovery and DCR). Host support
-for onboarding before the private connection completes must be tested; public
-onboarding can also be connected separately during account setup.
+These are the untagged Cloud Run **service** URLs. Their traffic moves to each
+environment's promoted revision; an existing connection receives that revision
+without changing its URL. Do not install `pr-*---` or `sha-*---` revision URLs as
+permanent connections. Production promotion remains separate from main's dev
+rollout. The production service URL is inventory-confirmed, but that alone does
+not mean its MCP/OAuth service is active.
 
-No account credentials, infrastructure secrets, customer data, backend source,
-or privileged execution hooks belong in this repository. Installation does not
-grant account access: the user connects through browser OAuth consent.
+Existing **Actionfleet Dev** connections using the dev URL already receive server
+updates. Keep them while testing plugin installation; avoid duplicate task claims
+from two connections. Complete browser OAuth using the intended Fleet account.
+No bearer tokens, client secrets or request headers are needed for normal DCR
+setup. Public onboarding lives at the same origin's `/public/mcp`; authorized
+work lives at `/mcp`.
 
-## Build a release candidate
+## Install
 
-Run the checks, then supply the actual verified HTTPS MCP URL:
+The Git marketplace is **actionfleetai/actionfleet-plugin**, tracking **main**.
+It contains OpenAI, Claude and Cursor catalogs and complete packages with bundled
+MCP definitions and shared skills. Public directory review/listing is a separate
+step; this repository does not imply vendor approval.
+
+### Codex
+
+For clients supporting Git marketplaces:
 
 ```sh
+codex plugin marketplace add actionfleetai/actionfleet-plugin --ref main
+```
+
+Then install **Action Fleet Dev** from the app's Plugins directory under the
+Action Fleet marketplace. For managed hosted workspaces, an administrator can
+import `https://github.com/actionfleetai/actionfleet-plugin` through the workspace
+plugin marketplace settings. Availability varies by surface and workspace policy.
+Local CLI installation does not install a plugin into a Codex cloud chat. Until
+that host's package import is available, keep the hosted custom MCP connection at
+the stable dev URL and select it in the cloud chat.
+
+### Claude Code
+
+```sh
+claude plugin marketplace add actionfleetai/actionfleet-plugin
+claude plugin install actionfleet-dev@actionfleet
+```
+
+Enable **auto-update** for the Action Fleet marketplace in `/plugin` →
+Marketplaces. Third-party marketplaces default to auto-update off. Install and
+authenticate through your browser; inspect `/mcp` if a bundled server needs consent.
+
+Claude Code **cloud** does not inherit a plugin installed on your local computer.
+For the cloud-first path, add **Action Fleet Dev** at
+[Claude connectors](https://claude.ai/customize/connectors) with the dev URL:
+**Sign in now**, **Register automatically**, no custom headers. Use the same
+Fleet login as your other harness. Connector availability and packaged skill
+availability are separate; use your organization's supported cloud plugin
+distribution when available. A successful Claude chat connector is not yet proof
+of Claude Code cloud tool execution.
+
+### Cursor
+
+For a team marketplace, open Dashboard → **Plugins & MCPs** → Team Marketplaces →
+**Add Marketplace** → **Import from Repo** and enter
+`https://github.com/actionfleetai/actionfleet-plugin`. Review/add **Action Fleet
+Dev**, save access settings, and install it from Cursor's plugin UI. Enable
+**Auto Refresh** for the GitHub import; the Cursor GitHub App needs access to this
+public repository. Refresh the marketplace manually if that option is unavailable.
+Cloud Agents must also have the MCP/connector available in their own environment.
+
+For the standalone cloud path, add the stable dev URL under **Team MCP Servers**
+in Dashboard → Plugins & MCPs and complete OAuth with your Fleet login. The dev
+server must allow `https://www.cursor.com/agents/mcp/oauth/callback`. Desktop's
+`http://localhost:8787/callback` is covered by the configured localhost callback
+with an ephemeral port. No static OAuth client or bearer secret is required.
+
+The package includes the portable `plugin.json`/`mcp.json` and native
+`.cursor-plugin/plugin.json`; both use the same skills. No CLI-only install step
+is presented as proof that a Cursor cloud agent is connected.
+
+## What updates, and when
+
+| Layer | Update path | Check |
+| --- | --- | --- |
+| Server behavior | Deploy/promote behind the stable environment URL | `bootstrap_harness` → `deployment.source_sha` |
+| MCP tool schemas | Host refresh/reconnect or new session; rediscover after deployment changes | Tool discovery and `get_protocol_schema` |
+| Bundled skills/manifests | Versioned Git marketplace/plugin update | Installed plugin version and `skills/setup/references/installation.json` |
+| Account access | Browser OAuth consent and normal token refresh | Required bootstrap checks and server-bound worker/scope |
+
+For Codex, refresh the repo snapshot with `codex plugin marketplace upgrade
+actionfleet` and apply the plugin update in the supported app UI; hosted imports
+use their workspace sync controls. For Claude Code, use `claude plugin update
+actionfleet-dev@actionfleet`, then `/reload-plugins` or a new session. Refreshing a
+marketplace listing alone does not guarantee installed skills changed. Cursor's
+team Auto Refresh updates the indexed package; use its update/reload controls and
+confirm the installed version before claiming the session uses new skills.
+
+Do not recreate OAuth connections for ordinary deployments. A future custom
+domain migration must deliberately preserve/change the OAuth issuer, resource
+audience and registrations together; a redirect or DNS alias alone is not a
+tested OAuth migration. Current service URLs remain stable throughout that work.
+
+## Use the tools
+
+Run `setup` once per new session/reconnect to bootstrap and discover current
+schemas. Use `work-task` to discover/claim/checkpoint/report authorized work and
+`coordinate` to split independent tasks and collect results. Bootstrap includes
+recovery and a tool guide. Preserve claim/STOP checks and human verification of an
+exact report. GitHub is source/CI, not Fleet's coordination queue. Normal chat
+questions do not need a task ceremony.
+
+## Build, verify and release
+
+`plugins/actionfleet/` is the only skill source. `profiles.json` declares the
+environment endpoints and availability. Generate the tracked `packages/` and
+three root marketplace catalogs after edits:
+
+```sh
+python3 scripts/catalog.py
 python3 -m unittest discover -s tests
-python3 scripts/build.py --mcp-url "$ACTIONFLEET_MCP_URL" --output /tmp/actionfleet-release
+python3 scripts/catalog.py --check
+python3 scripts/catalog.py --archives /tmp/actionfleet-release
 ```
 
-The build refuses credential-bearing URLs, endpoint query parameters, an existing
-output directory, symlinks, and unexpected source files. It produces a complete
-MCP-enabled plugin, marketplace catalogs, and a deterministic plugin ZIP. It does
-not connect accounts, install dependencies, grant permissions, publish a release,
-or submit anything to a vendor directory.
+Never hand-edit generated packages. Bump `plugins/actionfleet/plugin.json`'s
+version whenever package contents change. CI checks generated drift, package
+isolation and reproducibility, validates the real packages/catalog with Claude's
+CLI, and anonymously probes each configured endpoint. Active profiles must pass
+discovery/issuer/resource/PKCE/auth-challenge checks. Inactive production failures
+remain visible in the endpoint artifact and do not block dev publication. These
+checks do not register OAuth clients, consent, read private data or modify tasks.
 
-Validate the generated artifacts in actual hosts. In Claude Code:
+On main, passing checks publish an immutable versioned prerelease with active
+package ZIPs and `SHA256SUMS`. Existing versions cannot be overwritten with changed
+package contents. Git marketplace consumers track main; pinned tags/ZIPs stay
+pinned until deliberately updated. Production is excluded from Claude/Cursor's
+installable catalogs and marked `NOT_AVAILABLE` in OpenAI's catalog until its
+profile is activated. Prepared production files are for operator review.
 
-```sh
-claude plugin validate /tmp/actionfleet-release/plugins/actionfleet --strict
-claude plugin validate /tmp/actionfleet-release --strict
-```
+To activate production, first verify production Firebase/account scope, OAuth
+issuer/resource, intended callback allowlist, durable storage and native harness
+canary through the separate production rollout. Then set `installable: true`,
+bump the plugin version, regenerate and publish. No dev account identifiers,
+tokens, task IDs or callbacks are automatically copied into production.
 
-For supported OpenAI clients, use the generated repo marketplace or import the
-complete package through the supported workspace/private-plugin flow. Codex cloud
-connection/installation is separate from editing local CLI configuration. A public
-GitHub repository or custom marketplace is separate from an approved public
-directory listing.
-
-## User onboarding
-
-The intended user experience is **Install Action Fleet Plugin**, then run setup.
-The bundled skill discovers `bootstrap_harness`, supplies the actual harness name
-and observed version, and guides the user through required setup. Optional
-capabilities remain visible without blocking the basic task profile.
-
-The work skill targets `actionfleet/1` and reads exact command data schemas
-through `get_protocol_schema`. It covers connection-bound claim recovery,
-guarded waiting/report/release, cooperative STOP and human verification of an
-exact report/artifact. Check bootstrap protocol and deployment provenance before
-using it. Updating this authoring source does not establish live/native release
-acceptance or upgrade a running server.
-
-The MCP has distinct public onboarding and account-authorized surfaces. Public
-onboarding can link to signup/signin and explain the connection process; private
-task access requires OAuth and the applicable server-side authorization. Missing
-setup should lead to a concrete next action, never a request to paste passwords,
-provider keys or access tokens into chat.
-
-The skills cover Codex and Cursor through the same discovered task protocol.
-Actual host installation, execution and native launch/resume must be tested
-separately. Claude packaging remains compatibility preparation. No package pools
-subscription allowances or supplies a launcher merely by being installed.
-
-Use `setup` for connection/readiness, `work-task` for execution/recovery, and
-`coordinate` for independent fan-out/fan-in. Each skill has a specific trigger;
-ordinary chat questions do not require a coordination ceremony. The compact
-tool guide and bootstrap tool guide expose the main tools without repeated
-full discovery. Fleet owns task state; GitHub remains optional code/CI evidence.
-
-For Fleet source edits, all harnesses follow the same
-[mainline and delivery guide](https://github.com/actionfleetai/fleet/blob/main/docs/harness-mainline-workflow.md):
-checkpoint, fetch/rebase, affected checks, freshness check, guarded push, source
-registration and independent delivery receipts. The plugin points to the
-repository's canonical instructions rather than inventing a second source policy.
-
-## Release acceptance
-
-- Confirm public onboarding, OAuth discovery, consent, revocation and account isolation.
-- Confirm the plugin installs and invokes its setup skill in each supported host.
-- Complete a native Codex cloud task through the deployed MCP and record the version.
-- Test missing required setup, optional omissions, denied access and stale revisions.
-- Keep release contents and the verified endpoint reproducible; publish explicit support status.
-- Publish versioned tags/packages only after the complete MCP-enabled package passes.
-
-Sources: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins),
-[OpenAI connection testing](https://developers.openai.com/plugins/deploy/connect-chatgpt),
-[Claude manifest reference](https://code.claude.com/docs/en/plugins-reference), and
-[Claude marketplaces](https://code.claude.com/docs/en/plugin-marketplaces).
+Sources: [OpenAI packaging](https://developers.openai.com/plugins/build/plugins),
+[OpenAI workspace marketplace sync](https://help.openai.com/en/articles/20001504-importing-and-syncing-plugin-marketplaces-from-github),
+[Claude plugin installation/updates](https://code.claude.com/docs/en/discover-plugins),
+[Cursor plugins](https://cursor.com/docs/plugins) and
+[Cursor manifest reference](https://cursor.com/docs/reference/plugins).
 
 Licensed under the [MIT License](LICENSE).

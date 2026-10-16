@@ -1,5 +1,7 @@
-name: Validate public plugin source
-on: [push, pull_request]
+name: Validate and publish Action Fleet plugins
+on:
+  push:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -13,6 +15,7 @@ jobs:
         with:
           python-version: '3.14'
       - run: python -m unittest discover -s tests
+      - run: python scripts/catalog.py --check
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -24,3 +27,64 @@ jobs:
         run: |
           npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate "$RUNNER_TEMP/actionfleet-validation/plugins/actionfleet" --strict
           npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate "$RUNNER_TEMP/actionfleet-validation" --strict
+          npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate packages/actionfleet-dev --strict
+          npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate packages/actionfleet --strict
+          npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate . --strict
+      - name: Build reviewed active packages
+        run: python scripts/catalog.py --archives "$RUNNER_TEMP/actionfleet-release"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: actionfleet-plugins
+          path: ${{ runner.temp }}/actionfleet-release/*
+  endpoints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Check anonymous OAuth contracts without registering clients
+        run: python scripts/probe_endpoints.py --output endpoint-status.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actionfleet-endpoints
+          path: endpoint-status.json
+  release:
+    needs: [validate, endpoints]
+    if: github.ref == 'refs/heads/main' && github.repository == 'actionfleetai/actionfleet-plugin'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: actionfleet-plugins
+          path: release
+      - name: Publish an immutable prerelease for the plugin version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("plugins/actionfleet/plugin.json"))["version"])')
+          tag="v$version"
+          if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            git diff --exit-code "$tag" -- plugins packages profiles.json scripts/build.py scripts/catalog.py .agents .claude-plugin .cursor-plugin
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            mkdir previous-release
+            gh release download "$tag" --pattern SHA256SUMS --dir previous-release
+            cmp previous-release/SHA256SUMS release/SHA256SUMS
+          else
+            gh release create "$tag" release/* --target "$GITHUB_SHA" --prerelease \
+              --title "Action Fleet $version" \
+              --notes 'Install Action Fleet Dev from the Git marketplace. Production is prepared but unavailable until its OAuth and native acceptance pass. Includes shared setup/task/coordination skills, vendor manifests, deterministic ZIP and SHA-256 sums. See README for installation and update controls.'
+          fi

@@ -56,7 +56,7 @@ def configure(harness):
     result, unchanged = updated(raw, harness)
     backup_dir = Path(tempfile.mkdtemp(prefix='actionfleet-dev-callbacks-'))
     backup = backup_dir / 'ACTIONFLEET_CONFIG_DEV.json'
-    with backup.open('x', opener=lambda path, flags: os.open(path, flags, 0o600)) as file:
+    with open(backup, 'x', opener=lambda path, flags: os.open(path, flags, 0o600)) as file:
         file.write(raw)
     print('Backup: ' + str(backup))
     if not unchanged:

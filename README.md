@@ -81,8 +81,10 @@ Cursor batches automatic re-indexing to at most once every ten minutes; use
 **Refresh** when testing a just-pushed package.
 Cloud Agents must also have the MCP/connector available in their own environment.
 
-For the standalone cloud path, add the stable dev URL under **Team MCP Servers**
-in Dashboard → Plugins & MCPs and complete OAuth with your Fleet login. The dev
+For the standalone cloud path, open [Cursor Agents](https://cursor.com/agents),
+use its **MCP dropdown** to add a custom **HTTP** server with the stable dev URL,
+and complete OAuth with your Fleet login. Shared servers can also be configured
+under **Team MCP Servers** in Dashboard → Plugins & MCPs. The dev
 server must allow `https://www.cursor.com/agents/mcp/oauth/callback`. Desktop's
 `http://localhost:8787/callback` is covered by the configured localhost callback
 with an ephemeral port. No static OAuth client or bearer secret is required.

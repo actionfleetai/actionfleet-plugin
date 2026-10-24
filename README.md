@@ -1,9 +1,23 @@
 # Action Fleet plugins
 
 Install **Action Fleet Dev** to connect Codex, Claude Code or Cursor to the same
-durable coordination service. Work runs in your harness. Fleet records tasks,
+durable coordination service. Work runs in your harness. Fleet records Ships,
 claims, progress and independent delivery outputs; installation does not launch
 a stopped chat or pool subscription allowances.
+
+**The MCP is the integration; this plugin is optional.** Any host that takes MCP
+servers gets everything from the MCP alone: its instructions, tool descriptions,
+bootstrap's `tool_guide` and `get_guide` (`start`, `work`, `coordinate`). The plugin
+packages that connection so a host can switch it on and off, with thin skills that
+defer to the server. Keep them in sync:
+
+- The setup skill passes this plugin's version to `bootstrap` (`plugin_version`);
+  `plugin.status` is `outdated` when the server needs a newer plugin. Agents then
+  follow the server and ask the user to update.
+- CI's endpoints job reads the live public catalog and fails when a skill names a
+  tool the server lacks or the server needs a newer plugin than this one.
+  `server-tools.json` is the offline snapshot the unit tests use; refresh it when
+  the server's tools change.
 
 ## Stable connections
 
@@ -97,8 +111,9 @@ is presented as proof that a Cursor cloud agent is connected.
 
 | Layer | Update path | Check |
 | --- | --- | --- |
-| Server behavior | Deploy/promote behind the stable environment URL | `bootstrap_harness` → `deployment.source_sha` |
-| MCP tool schemas | Host refresh/reconnect or new session; rediscover after deployment changes | Tool discovery and `get_protocol_schema` |
+| Server behavior | Deploy/promote behind the stable environment URL | `bootstrap` → `deployment.source_sha` |
+| MCP tool schemas | Host refresh/reconnect or new session; rediscover after deployment changes | Tool discovery (`get_tags`, `search`, `get_schema`) |
+| Plugin and server in sync | Plugin release at or above the server's `plugin_minimum` | `bootstrap(plugin_version=…)` → `plugin.status`; CI endpoints job |
 | Bundled skills/manifests | Versioned Git marketplace/plugin update | Installed plugin version and `skills/setup/references/installation.json` |
 | Account access | Browser OAuth consent and normal token refresh | Required bootstrap checks and server-bound worker/scope |
 
@@ -117,12 +132,13 @@ tested OAuth migration. Current service URLs remain stable throughout that work.
 
 ## Use the tools
 
-Run `setup` once per new session/reconnect to bootstrap and discover current
-schemas. Use `work-task` to discover/claim/checkpoint/report authorized work and
-`coordinate` to split independent tasks and collect results. Bootstrap includes
-recovery and a tool guide. Preserve claim/STOP checks and human verification of an
-exact report. GitHub is source/CI, not Fleet's coordination queue. Normal chat
-questions do not need a task ceremony.
+Run `setup` once per new session/reconnect to bootstrap with this plugin's version.
+`work-task` and `coordinate` are short forms of the server's `get_guide` topics
+`work` and `coordinate`: crew, checkpoint and report Ships; open Convoys, delegate
+to a child Ship and message related Ships through tunnels. Where a skill and the
+server differ, the server wins. Preserve claim/STOP checks and human verification of
+an exact report. GitHub is source/CI, not Fleet's coordination queue. Normal chat
+questions do not need a Ship.
 
 Bootstrap with the actual harness **before the first claim**, including
 `cursor-cloud` for Cursor Cloud Agents. If a connection's harness label is wrong,

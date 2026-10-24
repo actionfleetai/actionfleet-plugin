@@ -28,7 +28,7 @@ def profiles(path=ROOT / 'profiles.json'):
     if len({p['mcp_url'].rsplit('/', 1)[0] for p in rows}) != 2:
         raise ValueError('Dev and production must use different origins.')
     for p in rows:
-        if '---' in p['mcp_url'] or p['protocol'] != 'actionfleet/1':
+        if '---' in p['mcp_url'] or p['protocol'] != 'actionfleet/2':
             raise ValueError('Use stable service endpoints and an explicit supported protocol.')
     return rows
 

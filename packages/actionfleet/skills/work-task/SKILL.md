@@ -1,88 +1,24 @@
 ---
 name: work-task
-description: Use when asked to pick up, implement, resume, stop, or report an Action Fleet task. Coordinate through the connected MCP while work runs in this harness.
+description: Use when asked to pick up, do, resume, stop or report an Actionfleet Ship (a tracked task). The server's work guide has the steps; this is the short form.
 ---
 
-# Work on a Fleet task
+# Work on a Ship
 
-Use Fleet when the user asks to coordinate or execute a tracked task. Ordinary
-questions and tiny local edits do not need invented task hierarchies or duplicate
-GitHub records. Fleet owns task state; GitHub is optional source/CI evidence.
-Do not create issue mirrors, Project cards, task labels or callback comments.
+Call `get_guide` with topic `work` and follow it: it comes from the server, so it matches the
+tools this session has. The short form:
 
-## Fast path
+- Find or read the Ship with `list_ships(mode='inbox', limit=5)` or `get_ship`, crew it with
+  `crew_ship`, and state the source scope (local iteration, checkpoint, pull request or mainline)
+  in the first `update_ship`. Checkpoint with `update_ship`; it renews the lease.
+- Finish with `report_ship`: evidence and, for code, the exact repository and commit. It releases
+  the claim. A person verifies; never verify your own work.
+- Cannot do it? `block_ship` with the blocker. Waiting on another Ship? `set_blocked_by`. On STOP,
+  stop external work, then `release_ship` with reason `stopped`.
+- `get_ship`, `crew_ship` and `update_ship` carry `tunnels` when a related Ship's crew wrote to
+  this Ship; read them with `read_tunnel`.
+- Follow the target repository's source and commit identity policy. Never replace the user's Git
+  identity with an agent's to satisfy a hook or a Verified badge.
 
-1. If setup is unknown or reconnecting, use the setup skill. Bootstrap once,
-   recover current claims, and discover the current tool/payload schemas once.
-   Read the server's `tool_guide`; do not repeatedly rediscover unchanged schemas.
-2. For assigned work, `get_task`. For pickup, `list_tasks(mode="inbox", limit=5)`.
-   Follow pagination while `has_more`; retain the cursor. Read acceptance,
-   requirements, dependency policy, claim and STOP. Claim only authorized work
-   this connection can perform, using `submit_task_command(kind="claim")`.
-3. Work in an isolated attempt workspace. Preserve the returned claim ID/current
-   head. Before shared writes, check live claim/STOP. Send progress at meaningful
-   milestones or when renewal is needed; avoid narrating every tool call.
-4. Report exact evidence/artifact with the current claim and `if_head`. A report
-   releases the claim. Human verification is separate; never self-verify.
-
-Batch related native calls in one Code Mode `execute` block when supported.
-Return only relevant IDs, state, blockers and next action; avoid dumping histories.
-For independent fan-out/fan-in, use the coordinate skill and the server's bounded
-batch/group tools if advertised. See [the compact tool guide](references/tool-guide.md).
-
-## Source integration and delivery
-
-Follow the target repository's source policy. For `actionfleetai/fleet`, use the
-[canonical harness workflow](https://github.com/actionfleetai/fleet/blob/main/docs/harness-mainline-workflow.md):
-local checkpoint commit, fetch main, rebase if needed, affected checks, fetch again
-and repeat when main advances. `node scripts/mainline.mjs prepare` bounds that
-loop to three passes. Enable the repository's pre-push hook without replacing
-other hooks; recheck live Fleet claim/STOP before a normal direct-main push.
-Validate the final rebased source; never reuse a check from an earlier source or
-force-push through a race. Other repositories need their own explicit policy.
-
-Use the human author/committer identity specified by the user or target repository
-for agent-prepared commits. Credit the actual assisting agent/model with an
-optional documented `Co-authored-by` trailer, or an `Agent-Harness` trailer without
-inventing a provider email. Keep that attribution secondary; a harness Stop hook
-or an Unverified badge is not a reason to replace the user's identity with an
-agent/bot. Signing verification is independent of authorship: preserve signing
-settings, inspect the actual reason, and report a key/setup blocker accurately.
-Preserve other contributors' authorship and published history. Correct a user's
-unpublished commit only within their authorized scope, then revalidate its new SHA.
-
-Discover `register_changeset`, `get_task_outputs`, `get_changeset_outputs` and
-`record_changeset_output` when delivery is in scope. Register the exact repository,
-full commit, target and requested lanes while claimed. Registration does not land
-source or launch a build. Read authenticated CI receipts; manual evidence stays
-harness-reported. Return the dev link when ready while iOS/Android proceed
-independently. Upload receipt, store processing and human acceptance are distinct.
-Do not rebuild or reupload a successful lane just to retry its receipt publisher.
-
-## Recovery and authority
-
-OAuth determines the worker. Session names do not isolate identities or prove a
-subscription/model entitlement. Advertise real models/capabilities during setup;
-client-reported availability is not provider-verified execution. A claim ID is an
-attempt ID, not a secret. Another writer needs an explicit handoff.
-
-Use stable command IDs and retain entire submitted commands, including timestamps.
-Retry uncertain writes unchanged; inspect their current returned head before the
-next action. Reconcile external effects before repeating them. Recover with
-`list_tasks(mode="my_claims")` and task-local changeset cursors.
-
-A waiting reason does not pause a lease or register a wake. Use actual harness
-continuations; otherwise give the concrete resume step. Fleet's MCP connection
-alone cannot launch a stopped native chat. Never report dispatched/running based
-only on a saved connection, task creation or client-reported capability.
-
-On STOP, cease new work, stop owned external work where supported, reconcile
-in-flight effects and acknowledge using guarded `release(reason="stopped")`.
-Do not claim process cleanup without evidence. Expiry revokes authority but does
-not prove an external process stopped.
-
-Finish only requested endpoints. Candidate build, source integration, deployment,
-store receipt and processing are different milestones. Do not keep an icon/source
-task open following unrelated deployments. Use existing focused checks; broad CI
-can overlap candidate preparation. Preserve required review and release authority.
-Report measured usage only; omit unknown costs, token balances and reset times.
+Name Ships to people by their Ship id (SHIP-12). If a tool named here is missing, this plugin is
+out of date: say so and follow the server.

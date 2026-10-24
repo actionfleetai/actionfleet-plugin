@@ -1,22 +1,19 @@
-# Principal tools (discover the deployed schema)
+# Tools (the server decides)
 
-| Intent | Tool | Use |
-| --- | --- | --- |
-| Setup/reconnect | `bootstrap_harness` | Once; real harness/version/session and advertised models/capabilities. Read required checks, recovery and tool guide. |
-| Payload schema | `get_protocol_schema` | Discover once for this deployment, before constructing commands. |
-| Pick up work | `list_tasks` | Small eligible inbox; `my_claims` for recovery; follow cursors. |
-| Inspect/guard | `get_task` | Current claim/head/STOP/acceptance before shared writes. |
-| Claim/checkpoint/result | `submit_task_command` | Stable command ID; holder proof; current `if_head` where required. |
-| Independent fan-out | `submit_task_commands` | Only if advertised; max 16 independent commands, per-task results. |
-| Result fan-in | `get_task_group` | Only if advertised; max 16 known children, per-task watermarks, no acceptance implied. |
-| Investigate/recover | `get_task_changesets` | Bounded task-local history when needed, not every poll. |
-| Bind source | `register_changeset` | While claimed; exact repo/full commit, target and supported delivery lanes. Does not push or launch. |
-| Observe delivery | `get_task_outputs`, `get_changeset_outputs` | Independent dev/iOS/Android receipts and usable artifact links; no cross-lane blocking. |
-| Manual observation | `record_changeset_output` | Source-bound, versioned evidence; explicitly harness-reported. Prefer authenticated automatic CI receipts. |
-| Diagnose runtime | `get_runtime_status` | Only for a concrete connection/runtime problem; not a setup ritual or provider quota source. |
+A map, not a contract: the deployed server's tools and their descriptions decide, and
+`get_guide` (`start`, `work`, `coordinate`) serves the full guides. This plugin's CI checks every
+tool named here against the live server's public catalog.
 
-Code Mode uses `await call_tool(name, params)` inside `execute`. Batch related
-reads; writes still need current authority. Return compact useful output. Do not
-assume tool availability from this static guide; fallback to current single-task
-tools if bulk tools are absent. An MCP connection supplies task coordination,
-not native process launch or interruption. Never ask for secrets in chat.
+| Need | Tools |
+| --- | --- |
+| Connect | `bootstrap`, `whoami`, `get_guide` |
+| Find and read Ships | `list_ships`, `get_ship`, `get_ship_actions`, `get_convoy` |
+| Open Ships | `new_ship`, `new_ships` |
+| Hold a Ship | `crew_ship`, `update_ship`, `report_ship`, `release_ship`, `block_ship` |
+| Relate and stop | `set_blocked_by`, `stop_ship` |
+| Talk to related Ships | `send_tunnel`, `read_tunnel` |
+| Deliver | `register_ship_payload`, `record_ship_port_result`, `get_ship_payload`, `list_ship_payloads` |
+| Cloud crews and budgets | `dispatch_convoy`, `get_convoy_dispatch`, `get_ship_budget`, `request_ship_budget` |
+
+`bootstrap`, `whoami`, `list_services` and `get_guide` are called directly. Find the rest with
+`search` and `get_schema`, and run them in `execute` with `await call_tool(name, params)`.

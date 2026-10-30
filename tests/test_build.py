@@ -20,17 +20,26 @@ class PackageTests(unittest.TestCase):
             plugin = root / 'plugins/actionfleet'
             portable = json.loads((plugin / 'mcp.json').read_text())
             claude = json.loads((plugin / '.mcp.json').read_text())
-            self.assertEqual(portable['mcpServers']['actionfleet']['url'], claude['mcpServers']['actionfleet']['url'])
+            # One authorized server per package; it serves the start tools once signed in.
+            self.assertEqual(set(portable['mcpServers']), {'actionfleet'})
+            self.assertEqual(set(claude['mcpServers']), {'actionfleet'})
+            self.assertEqual(portable['mcpServers']['actionfleet']['url'], 'https://mcp.example.com/mcp')
+            self.assertEqual(claude['mcpServers']['actionfleet']['url'], 'https://mcp.example.com/mcp')
             self.assertEqual(portable['mcpServers']['actionfleet']['type'], 'streamable-http')
             self.assertEqual(claude['mcpServers']['actionfleet']['type'], 'http')
-            self.assertEqual(portable['mcpServers']['actionfleet-setup']['url'], 'https://mcp.example.com/public/mcp')
             self.assertEqual(portable['mcpServers']['actionfleet']['extensions']['com.openai']['auth']['type'], 'oauth')
-            self.assertEqual(portable['mcpServers']['actionfleet-setup']['extensions']['com.openai']['auth']['type'], 'none')
             for path in ['.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json']:
                 self.assertEqual(json.loads((root / path).read_text())['plugins'][0]['name'], 'actionfleet')
+            # Every host's manifest names the profile's icon, packaged beside it.
+            self.assertEqual((plugin / module.ICON).read_bytes(), (ROOT / 'icons/actionfleet.png').read_bytes())
+            codex = json.loads((plugin / '.codex-plugin/plugin.json').read_text())['interface']
+            self.assertEqual((codex['logo'], codex['composerIcon']), ('./assets/icon.png', './assets/icon.png'))
+            self.assertEqual(json.loads((plugin / '.claude-plugin/plugin.json').read_text())['icon'], './assets/icon.png')
+            self.assertEqual(json.loads((plugin / '.cursor-plugin/plugin.json').read_text())['logo'], 'assets/icon.png')
             with zipfile.ZipFile(archive) as z:
                 names = z.namelist()
                 self.assertIn('actionfleet/mcp.json', names)
+                self.assertIn('actionfleet/assets/icon.png', names)
                 self.assertIn('actionfleet/.codex-plugin/plugin.json', names)
                 self.assertNotIn('actionfleet/plugin.json', names)
                 self.assertIn('actionfleet/LICENSE', names)

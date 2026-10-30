@@ -18,7 +18,8 @@ class CatalogTests(unittest.TestCase):
             root = 'packages/' + p['name'] + '/'
             portable = json.loads(files[root + 'mcp.json'])['mcpServers']
             claude = json.loads(files[root + '.mcp.json'])['mcpServers']
-            self.assertEqual(set(portable), {p['name'], p['name'] + '-setup'})
+            self.assertEqual(set(portable), {p['name']})
+            self.assertEqual(set(claude), {p['name']})
             self.assertEqual(portable[p['name']]['url'], p['mcp_url'])
             self.assertEqual(claude[p['name']]['url'], p['mcp_url'])
             for path in ('.codex-plugin/plugin.json', '.claude-plugin/plugin.json', '.cursor-plugin/plugin.json'):
@@ -33,6 +34,8 @@ class CatalogTests(unittest.TestCase):
             for skill in ('setup', 'work-task', 'coordinate'):
                 self.assertEqual(files[root + f'skills/{skill}/SKILL.md'],
                                  (ROOT / f'plugins/actionfleet/skills/{skill}/SKILL.md').read_bytes())
+            self.assertEqual(files[root + 'assets/icon.png'], (ROOT / 'icons' / (p['name'] + '.png')).read_bytes())
+        self.assertNotEqual(files['packages/actionfleet-dev/assets/icon.png'], files['packages/actionfleet/assets/icon.png'])
         openai = json.loads(files[catalog.CATALOGS[0]])['plugins']
         self.assertEqual([p['policy']['installation'] for p in openai], ['AVAILABLE', 'NOT_AVAILABLE'])
         for path in catalog.CATALOGS[1:]:
@@ -62,6 +65,14 @@ class CatalogTests(unittest.TestCase):
                 path = Path(tmp) / 'profiles.json'
                 path.write_text(json.dumps(rows))
                 with self.assertRaises(ValueError):
+                    catalog.profiles(path)
+        for background in (None, 'blue', '#1f7cf2cc', '#1F7CF2'):
+            rows = json.loads((ROOT / 'profiles.json').read_text())
+            rows['profiles'][0]['icon_background'] = background
+            with tempfile.TemporaryDirectory() as tmp:
+                path = Path(tmp) / 'profiles.json'
+                path.write_text(json.dumps(rows))
+                with self.subTest(background=background), self.assertRaises(ValueError):
                     catalog.profiles(path)
         rows['profiles'][0]['mcp_url'] = rows['profiles'][1]['mcp_url']
         with tempfile.TemporaryDirectory() as tmp:

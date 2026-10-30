@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'plugins/actionfleet'
 FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md',
          'skills/coordinate/SKILL.md', 'skills/work-task/references/tool-guide.md'}
+ICON = 'assets/icon.png'  # Each profile's render of icons/ship.svg (scripts/icons.py).
 
 
 def endpoint(value):
@@ -27,7 +28,7 @@ def write(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
 
 
-def build(url, output, source=SOURCE, *, name=None, display_name=None):
+def build(url, output, source=SOURCE, *, name=None, display_name=None, icon=None):
     url = endpoint(url)
     actual = {p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()}
     if actual != FILES or any(p.is_symlink() for p in source.rglob('*')):
@@ -49,36 +50,36 @@ def build(url, output, source=SOURCE, *, name=None, display_name=None):
     # portable manifest stays the source only and each host gets its native manifest.
     (plugin / 'plugin.json').unlink()
     shutil.copyfile(ROOT / 'LICENSE', plugin / 'LICENSE')
-    public_url = url[:-4] + '/public/mcp'
+    (plugin / ICON).parent.mkdir()
+    shutil.copyfile(icon or ROOT / 'icons' / f'{name}.png', plugin / ICON)
+    # One server per package: each connection to the authorized MCP is its own crew device, and it serves the start
+    # tools (bootstrap, get_guide) once signed in, so the anonymous /public/mcp stays server-side.
     write(plugin / 'mcp.json', {
         '$schema': 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
         'mcpServers': {
-            name + '-setup': {'type': 'streamable-http', 'url': public_url,
-                                 'extensions': {'com.openai': {'auth': {'type': 'none'}}}},
             name: {'type': 'streamable-http', 'url': url,
-                            'extensions': {'com.openai': {'auth': {'type': 'oauth', 'client': {'mode': 'dcr'}}}}},
+                   'extensions': {'com.openai': {'auth': {'type': 'oauth', 'client': {'mode': 'dcr'}}}}},
         },
     })
-    write(plugin / '.mcp.json', {'mcpServers': {
-        name + '-setup': {'type': 'http', 'url': public_url},
-        name: {'type': 'http', 'url': url},
-    }})
+    write(plugin / '.mcp.json', {'mcpServers': {name: {'type': 'http', 'url': url}}})
     common = {k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')}
     openai = manifest['extensions']['com.openai']
     write(plugin / '.codex-plugin/plugin.json', {
-        **common, 'skills': './skills/', 'mcpServers': './.mcp.json', 'interface': openai['interface'],
+        **common, 'skills': './skills/', 'mcpServers': './.mcp.json',
+        'interface': {**openai['interface'], 'composerIcon': './' + ICON, 'logo': './' + ICON},
         'extensions': {'com.openai': {'onboardingSkill': openai['onboardingSkill']}},
     })
-    write(plugin / '.claude-plugin/plugin.json', common)
-    write(plugin / '.cursor-plugin/plugin.json', {**common, 'displayName': openai['interface']['displayName']})
+    # Claude Code ignores icon; Anthropic's directory reads it for the listing.
+    write(plugin / '.claude-plugin/plugin.json', {**common, 'icon': './' + ICON})
+    write(plugin / '.cursor-plugin/plugin.json', {**common, 'displayName': openai['interface']['displayName'], 'logo': ICON})
     write(output / '.agents/plugins/marketplace.json', {
-        'name': 'actionfleet', 'interface': {'displayName': 'Action Fleet Plugins'},
+        'name': 'actionfleet', 'interface': {'displayName': 'Actionfleet Plugins'},
         'plugins': [{'name': name, 'source': {'source': 'local', 'path': './plugins/actionfleet'},
                      'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}],
     })
     write(output / '.claude-plugin/marketplace.json', {
-        'name': 'actionfleet', 'owner': {'name': 'Action Fleet'},
-        'description': 'Action Fleet harness setup and durable task coordination.',
+        'name': 'actionfleet', 'owner': {'name': 'Actionfleet'},
+        'description': 'Actionfleet harness setup and durable task coordination.',
         'plugins': [{'name': name, 'source': './plugins/actionfleet', 'description': manifest['description']}],
     })
     archive = output / f"{name}-{manifest['version']}.zip"

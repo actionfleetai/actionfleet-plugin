@@ -10,8 +10,7 @@ can switch it on and off. The server's tools, their descriptions, bootstrap's `t
 `get_guide` are the source of truth; wherever this skill and the server differ, follow the server.
 
 1. Read `references/installation.json` beside this skill: `name` is this plugin's MCP server,
-   `mcp_url` its address and `plugin_version` this plugin's version. The `<name>-setup` server is
-   public onboarding and needs no account.
+   `mcp_url` its address and `plugin_version` this plugin's version. It is the plugin's only server.
 2. Find that server's tools. When the authorized tools (`bootstrap`, `whoami`) are missing, the
    person signs in once in the browser with their Actionfleet account:
    - Claude Code: `/mcp`, choose `plugin:<name>:<name>`, then Authenticate.
@@ -22,7 +21,7 @@ can switch it on and off. The server's tools, their descriptions, bootstrap's `t
 3. One connection per host. If this session also has another Actionfleet connection to the same
    address (added by hand or a claude.ai connector), use one, and tell the person they can remove
    the other: each connection is its own crew device and could claim Ships separately.
-4. Call `bootstrap` once with the real harness (`claude-code`, `claude-code-cloud`, `codex-cloud`,
+4. Once signed in, call that server's `bootstrap` once with the real harness (`claude-code`, `claude-code-cloud`, `codex-cloud`,
    `codex`, `cursor` or `cursor-cloud`), its version or `unknown`, a stable session id, only the
    models and capabilities this session really has, and `plugin_version`.
 5. Read `plugin.status`. `current`: carry on. `outdated`: tell the person to update the Actionfleet

@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "actionfleet-setup": {
-      "type": "http",
-      "url": "https://api.actionfleet.ai/public/mcp"
-    },
     "actionfleet": {
       "type": "http",
       "url": "https://api.actionfleet.ai/mcp"

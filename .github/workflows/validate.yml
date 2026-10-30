@@ -1,4 +1,4 @@
-name: Validate and publish Action Fleet plugins
+name: Validate and publish Actionfleet plugins
 on:
   push:
   workflow_dispatch:
@@ -93,6 +93,6 @@ jobs:
             cmp previous-release/SHA256SUMS release/SHA256SUMS
           else
             gh release create "$tag" release/* --target "$GITHUB_SHA" --prerelease \
-              --title "Action Fleet $label" \
-              --notes 'Install Action Fleet Dev from the Git marketplace. Production is prepared but unavailable until its OAuth and native acceptance pass. Includes shared setup/task/coordination skills, vendor manifests, deterministic ZIP and SHA-256 sums. See README for installation and update controls.'
+              --title "Actionfleet $label" \
+              --notes 'Install Actionfleet Dev from the Git marketplace. Production is prepared but unavailable until its OAuth and native acceptance pass. Includes shared setup/task/coordination skills, vendor manifests, deterministic ZIP and SHA-256 sums. See README for installation and update controls.'
           fi

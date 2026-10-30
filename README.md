@@ -1,7 +1,8 @@
-# Action Fleet plugins
+# Actionfleet plugins
 
-Install **Action Fleet Dev** to connect Codex, Claude Code or Cursor to the same
-durable coordination service. Work runs in your harness. Fleet records Ships,
+Install **Actionfleet Dev** to connect Codex or Cursor to the same durable
+coordination service; Claude connects through one claude.ai connector instead
+([Claude Code](#claude-code)). Work runs in your harness. Fleet records Ships,
 claims, progress and independent delivery outputs; installation does not launch
 a stopped chat or pool subscription allowances.
 
@@ -23,8 +24,8 @@ defer to the server. Keep them in sync:
 
 | Package | Stable MCP URL | Availability |
 | --- | --- | --- |
-| Action Fleet Dev (`actionfleet-dev`) | `https://api.actionfleet.dev/mcp` | Active dev; native Codex, Claude and Cursor cloud task loops reported |
-| Action Fleet (`actionfleet`) | `https://api.actionfleet.ai/mcp` | Prepared production profile; not installable until native harness acceptance |
+| Actionfleet Dev (`actionfleet-dev`) | `https://api.actionfleet.dev/mcp` | Active dev; native Codex, Claude and Cursor cloud task loops reported |
+| Actionfleet (`actionfleet`) | `https://api.actionfleet.ai/mcp` | Prepared production profile; not installable until native harness acceptance |
 
 These are the API's branded hosts. Their traffic moves to each environment's
 promoted revision; an existing connection receives that revision without changing
@@ -40,8 +41,9 @@ updates. Use one connection per host: the plugin's server and a hand-added serve
 or claude.ai connector to the same address are separate crew devices that could
 each claim Ships, so remove the one you do not use. Complete browser OAuth using the intended Fleet account.
 No bearer tokens, client secrets or request headers are needed for normal DCR
-setup. Public onboarding lives at the same origin's `/public/mcp`; authorized
-work lives at `/mcp`.
+setup. Each package carries one server, the authorized `/mcp`, which serves the
+start tools (`bootstrap`, `get_guide`) once signed in. The same origin's
+anonymous `/public/mcp` is not packaged; the endpoint checks below use it.
 
 ## Install
 
@@ -57,10 +59,10 @@ codex plugin marketplace add actionfleetai/actionfleet-plugin && codex plugin ad
 ```
 
 Each command is safe to run again. `codex mcp login` opens the browser: approve with
-your Fleet account, then start a new Codex session. Its first Action Fleet request
-bootstraps; ask it to *set up this harness for Action Fleet* to have the onboarding
-skill report the required checks now. Or install **Action Fleet Dev** from the app's
-Plugins directory under the Action Fleet marketplace and approve the sign-in it offers.
+your Fleet account, then start a new Codex session. Its first Actionfleet request
+bootstraps; ask it to *set up this harness for Actionfleet* to have the onboarding
+skill report the required checks now. Or install **Actionfleet Dev** from the app's
+Plugins directory under the Actionfleet marketplace and approve the sign-in it offers.
 `codex mcp login` registers `http://127.0.0.1:<port>/callback`, so the
 server must allow `http://127.0.0.1/callback` (`scripts/configure_dev_callbacks.py
 --harness codex` adds it to dev's list; deploy dev afterwards).
@@ -76,36 +78,43 @@ the stable dev URL and select it in the cloud chat.
 
 ### Claude Code
 
+Connect Claude with one claude.ai connector. Claude's desktop app, the `claude` CLI
+and claude.ai/code cloud sessions all load it, so one connection covers local and
+cloud. Open the prefilled
+[Add Actionfleet Dev to Claude](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Actionfleet%20Dev&connectorUrl=https%3A%2F%2Fapi.actionfleet.dev%2Fmcp)
+link, or in Fleet choose Crew › Add crew › **Claude** › **Add to Claude**. Keep
+**Sign in now** and **Register automatically**, add no request headers, then
+**Connect** and approve with the same Fleet account as your other harnesses. A
+session bootstraps on its first Actionfleet request; a connected connector is not
+by itself proof that a cloud session ran Actionfleet tools, so check bootstrap from
+that session.
+
+**Don't also install this plugin in Claude.** Its server is a second connection to
+the same address beside the connector, so Claude becomes a second crew device that
+can claim Ships on its own, and a plugin installed on one computer never reaches
+cloud sessions. Use the plugin only where Claude Code is not signed in to claude.ai
+(connectors load only with a claude.ai login), instead of the connector:
+
 ```sh
 claude plugin marketplace add actionfleetai/actionfleet-plugin && claude plugin install actionfleet-dev@actionfleet
 ```
 
 Then, in a new session, open `/mcp`, choose `plugin:actionfleet-dev:actionfleet-dev`
 and **Authenticate** in the browser (in a session that was already open, run
-`/reload-plugins` first). Its first Action Fleet request bootstraps;
-`/actionfleet-dev:setup` reports the required checks on demand. Enable
-**auto-update** for the Action Fleet marketplace in `/plugin` → Marketplaces;
-third-party marketplaces default to auto-update off.
+`/reload-plugins` first). `/actionfleet-dev:setup` reports the required checks on
+demand. Enable **auto-update** for the Actionfleet marketplace in `/plugin` →
+Marketplaces; third-party marketplaces default to auto-update off.
 
-A repository prepared through the server's `get_guide("setup")` names this marketplace
-and plugin in `.claude/settings.json` (`extraKnownMarketplaces`, `enabledPlugins`) and
-skips its `.mcp.json` copy, so Claude Code loads the plugin once you trust the folder,
-with no install command.
-
-Claude Code **cloud** does not inherit a plugin installed on your local computer.
-For the cloud-first path, add **Action Fleet Dev** at
-[Claude connectors](https://claude.ai/customize/connectors) with the dev URL:
-**Sign in now**, **Register automatically**, no custom headers. Use the same
-Fleet login as your other harness. Connector availability and packaged skill
-availability are separate; use your organization's supported cloud plugin
-distribution when available. A successful Claude chat connector is not yet proof
-of Claude Code cloud tool execution.
+A repository prepared through the server's `get_guide("setup")` keeps its `.mcp.json`
+entry for the GitHub Copilot app and lists it in `disabledMcpjsonServers` in
+`.claude/settings.json`, so opening it in Claude Code adds nothing beside the
+connector.
 
 ### Cursor
 
 For a team marketplace, open Dashboard → **Plugins & MCPs** → Team Marketplaces →
 **Add Marketplace** → **Import from Repo** and enter
-`https://github.com/actionfleetai/actionfleet-plugin`. Review/add **Action Fleet
+`https://github.com/actionfleetai/actionfleet-plugin`. Review/add **Actionfleet
 Dev**, save access settings, and install it from Cursor's plugin UI. Enable
 **Auto Refresh** for the GitHub import; the Cursor GitHub App needs access to this
 public repository. Refresh the marketplace manually if that option is unavailable.
@@ -140,7 +149,8 @@ is presented as proof that a Cursor cloud agent is connected.
 
 For Codex, refresh the repo snapshot with `codex plugin marketplace upgrade
 actionfleet` and apply the plugin update in the supported app UI; hosted imports
-use their workspace sync controls. For Claude Code, use `claude plugin update
+use their workspace sync controls. Claude's connector has no plugin to update; where
+Claude Code uses the plugin instead, run `claude plugin update
 actionfleet-dev@actionfleet`, then `/reload-plugins` or a new session. Refreshing a
 marketplace listing alone does not guarantee installed skills changed. Cursor's
 team Auto Refresh updates the indexed package; use its update/reload controls and
@@ -181,9 +191,18 @@ python3 scripts/catalog.py --check
 python3 scripts/catalog.py --archives /tmp/actionfleet-release
 ```
 
+Each profile's icon is Actionfleet's single ship (`icons/ship.svg`, the site's app
+icon) on that profile's opaque `icon_background`: navy for Actionfleet and the
+brand's blue wing (`#1f7cf2`) for Actionfleet Dev, so the two read apart. After
+changing the art or a color, run `python3 scripts/icons.py` (needs `rsvg-convert`)
+to render `icons/<name>.png` at 512 px; the tests check each PNG's size and
+background. Packages carry it as `assets/icon.png`, named by Codex's
+`interface.logo` and `composerIcon`, Cursor's `logo` and Claude's `icon` (read by
+Anthropic's directory listing; Claude Code ignores it).
+
 `python3 scripts/check_codex_package.py` asks a real Codex (`codex app-server`,
 throwaway `CODEX_HOME`, no sign-in) what it loads from each package and fails
-unless both MCP servers, the three skills and the onboarding skill appear; CI runs
+unless its one MCP server, the three skills, the onboarding skill and its icon appear; CI runs
 it with a pinned Codex. Never hand-edit generated packages. Before a package release, run
 `python3 scripts/release_version.py bump` after fetching/rebasing main. It updates
 `release.json`, the canonical manifest and generated packages together. Releases

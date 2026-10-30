@@ -4,6 +4,7 @@ import argparse
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 import tempfile
 import zipfile
 
@@ -30,6 +31,8 @@ def profiles(path=ROOT / 'profiles.json'):
     for p in rows:
         if '---' in p['mcp_url'] or p['protocol'] != 'actionfleet/2':
             raise ValueError('Use stable service endpoints and an explicit supported protocol.')
+        if not re.fullmatch(r'#[0-9a-f]{6}', str(p.get('icon_background'))):
+            raise ValueError('Give each profile an opaque #rrggbb icon_background.')
     return rows
 
 
@@ -58,18 +61,18 @@ def generated(rows=None):
                 if file.is_file():
                     files[f"packages/{p['name']}/{file.relative_to(root).as_posix()}"] = file.read_bytes()
         entries.append({'name': p['name'], 'source': './packages/' + p['name'],
-                        'description': 'Action Fleet task coordination: ' + p['display_name'],
+                        'description': 'Actionfleet task coordination: ' + p['display_name'],
                         'version': meta['plugin_version']})
     files[CATALOGS[0]] = encoded({
-        'name': 'actionfleet', 'interface': {'displayName': 'Action Fleet Plugins'},
+        'name': 'actionfleet', 'interface': {'displayName': 'Actionfleet Plugins'},
         'plugins': [{'name': e['name'], 'source': {'source': 'local', 'path': e['source']},
                      'policy': {'installation': 'AVAILABLE' if p['installable'] else 'NOT_AVAILABLE',
                                 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}
                     for p, e in zip(rows, entries)],
     })
     active = [e for p, e in zip(rows, entries) if p['installable']]
-    common = {'name': 'actionfleet', 'owner': {'name': 'Action Fleet'},
-              'description': 'Action Fleet harness setup and durable task coordination.', 'plugins': active}
+    common = {'name': 'actionfleet', 'owner': {'name': 'Actionfleet'},
+              'description': 'Actionfleet harness setup and durable task coordination.', 'plugins': active}
     files[CATALOGS[1]] = encoded(common)
     files[CATALOGS[2]] = encoded(common)
     return files

@@ -1,9 +1,9 @@
 {
   "name": "actionfleet-dev",
-  "version": "2026.1029.1",
-  "description": "Coordinate authorized tasks across your connected Codex, Claude and Cursor harnesses with Action Fleet.",
+  "version": "2026.1030.1",
+  "description": "Coordinate authorized tasks across your connected Codex, Claude and Cursor harnesses with Actionfleet.",
   "author": {
-    "name": "Action Fleet",
+    "name": "Actionfleet",
     "url": "https://actionfleet.ai"
   },
   "homepage": "https://actionfleet.ai",
@@ -17,18 +17,20 @@
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
-    "displayName": "Action Fleet Dev",
+    "displayName": "Actionfleet Dev",
     "shortDescription": "Connect your harness and coordinate work",
-    "developerName": "Action Fleet",
+    "developerName": "Actionfleet",
     "category": "Productivity",
     "websiteURL": "https://actionfleet.ai",
     "privacyPolicyURL": "https://actionfleet.ai/privacy",
     "termsOfServiceURL": "https://actionfleet.ai/terms",
     "defaultPrompt": [
-      "Set up this harness for Action Fleet.",
-      "Find and claim an eligible Action Fleet task.",
+      "Set up this harness for Actionfleet.",
+      "Find and claim an eligible Actionfleet task.",
       "Split this work into independent Fleet tasks and collect their results."
-    ]
+    ],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   },
   "extensions": {
     "com.openai": {

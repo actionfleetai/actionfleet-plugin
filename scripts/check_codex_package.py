@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Ask a real Codex what it loads from each package: MCP servers, skills and the onboarding skill. Installs into a
-throwaway CODEX_HOME only; never signs in or connects to a server."""
+"""Ask a real Codex what it loads from each package: its one MCP server, skills, the onboarding skill and its icon.
+Installs into a throwaway CODEX_HOME only; never signs in or connects to a server."""
 import argparse
 import json
 import os
@@ -52,14 +52,18 @@ def read_plugins(names, codex='codex', root=ROOT, install=(), timeout=60):
 def problems(name, plugin, installed=True):
     found = []
     servers = set(plugin.get('mcpServers') or [])
-    if servers != {name, name + '-setup'}:
-        found.append(f'{name}: Codex loads MCP servers {sorted(servers)}, expected {sorted({name, name + "-setup"})}')
+    if servers != {name}:
+        found.append(f'{name}: Codex loads MCP servers {sorted(servers)}, expected {[name]}')
     if installed and (plugin.get('onboardingSkill') or {}).get('name') != name + ':setup':
         found.append(f'{name}: Codex has no {name}:setup onboarding skill')
     skills = {s['name'] for s in plugin.get('skills') or []}
     for skill in ('setup', 'work-task', 'coordinate'):
         if f'{name}:{skill}' not in skills:
             found.append(f'{name}: Codex does not load skill {skill}')
+    interface = (plugin.get('summary') or {}).get('interface') or {}
+    for key in ('logo', 'composerIcon'):
+        if not str(interface.get(key) or '').endswith(f'/packages/{name}/assets/icon.png'):
+            found.append(f'{name}: Codex resolves no {key} to the package icon')
     return found
 
 

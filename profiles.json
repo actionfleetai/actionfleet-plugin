@@ -4,18 +4,20 @@
     {
       "channel": "dev",
       "name": "actionfleet-dev",
-      "display_name": "Action Fleet Dev",
+      "display_name": "Actionfleet Dev",
       "mcp_url": "https://api.actionfleet.dev/mcp",
       "installable": true,
-      "protocol": "actionfleet/2"
+      "protocol": "actionfleet/2",
+      "icon_background": "#1f7cf2"
     },
     {
       "channel": "prod",
       "name": "actionfleet",
-      "display_name": "Action Fleet",
+      "display_name": "Actionfleet",
       "mcp_url": "https://api.actionfleet.ai/mcp",
       "installable": false,
-      "protocol": "actionfleet/2"
+      "protocol": "actionfleet/2",
+      "icon_background": "#0a0e1a"
     }
   ]
 }

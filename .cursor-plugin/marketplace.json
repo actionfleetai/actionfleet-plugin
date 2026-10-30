@@ -1,15 +1,15 @@
 {
   "name": "actionfleet",
   "owner": {
-    "name": "Action Fleet"
+    "name": "Actionfleet"
   },
-  "description": "Action Fleet harness setup and durable task coordination.",
+  "description": "Actionfleet harness setup and durable task coordination.",
   "plugins": [
     {
       "name": "actionfleet-dev",
       "source": "./packages/actionfleet-dev",
-      "description": "Action Fleet task coordination: Action Fleet Dev",
-      "version": "2026.1029.1"
+      "description": "Actionfleet task coordination: Actionfleet Dev",
+      "version": "2026.1030.1"
     }
   ]
 }

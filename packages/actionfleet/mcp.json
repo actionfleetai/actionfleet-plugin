@@ -1,17 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
-    "actionfleet-setup": {
-      "type": "streamable-http",
-      "url": "https://api.actionfleet.ai/public/mcp",
-      "extensions": {
-        "com.openai": {
-          "auth": {
-            "type": "none"
-          }
-        }
-      }
-    },
     "actionfleet": {
       "type": "streamable-http",
       "url": "https://api.actionfleet.ai/mcp",

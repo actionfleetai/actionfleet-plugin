@@ -1,9 +1,9 @@
 {
   "name": "actionfleet",
-  "version": "2026.1029.1",
-  "description": "Coordinate authorized tasks across your connected Codex, Claude and Cursor harnesses with Action Fleet.",
+  "version": "2026.1030.1",
+  "description": "Coordinate authorized tasks across your connected Codex, Claude and Cursor harnesses with Actionfleet.",
   "author": {
-    "name": "Action Fleet",
+    "name": "Actionfleet",
     "url": "https://actionfleet.ai"
   },
   "homepage": "https://actionfleet.ai",
@@ -14,5 +14,6 @@
     "mcp",
     "harness"
   ],
-  "displayName": "Action Fleet"
+  "displayName": "Actionfleet",
+  "logo": "assets/icon.png"
 }

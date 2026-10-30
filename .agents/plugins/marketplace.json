@@ -1,7 +1,7 @@
 {
   "name": "actionfleet",
   "interface": {
-    "displayName": "Action Fleet Plugins"
+    "displayName": "Actionfleet Plugins"
   },
   "plugins": [
     {

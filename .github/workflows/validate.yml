@@ -30,6 +30,10 @@ jobs:
           npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate packages/actionfleet-dev --strict
           npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate packages/actionfleet --strict
           npm exec --yes --package @anthropic-ai/claude-code@2.1.300 -- claude plugin validate . --strict
+      - name: Check what Codex loads from each package without signing in
+        run: |
+          npm install --global @openai/codex@0.162.1
+          python scripts/check_codex_package.py
       - name: Build reviewed active packages
         run: python scripts/catalog.py --archives "$RUNNER_TEMP/actionfleet-release"
       - uses: actions/upload-artifact@v4

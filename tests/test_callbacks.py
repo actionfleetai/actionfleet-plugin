@@ -61,3 +61,13 @@ class CallbackTests(unittest.TestCase):
             with self.subTest(origin=origin, callbacks=callbacks), self.assertRaises(ValueError):
                 updated(json.dumps({'ACTIONFLEET_MCP_ENABLED': 'true', 'ACTIONFLEET_API_URL': origin,
                                     'ACTIONFLEET_OAUTH_REDIRECT_URIS': callbacks}), 'cursor')
+
+
+class CodexCallbackTests(unittest.TestCase):
+    def test_codex_adds_only_its_loopback_callback(self):
+        old = {'ACTIONFLEET_MCP_ENABLED': 'true', 'ACTIONFLEET_API_URL': DEV_ORIGIN,
+               'ACTIONFLEET_OAUTH_REDIRECT_URIS': json.dumps(['http://localhost/callback', 'http://127.0.0.1/'])}
+        result, unchanged = updated(json.dumps(old), 'codex')
+        self.assertFalse(unchanged)
+        self.assertEqual(json.loads(result['ACTIONFLEET_OAUTH_REDIRECT_URIS']),
+                         ['http://localhost/callback', 'http://127.0.0.1/', 'http://127.0.0.1/callback'])

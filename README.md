@@ -23,19 +23,22 @@ defer to the server. Keep them in sync:
 
 | Package | Stable MCP URL | Availability |
 | --- | --- | --- |
-| Action Fleet Dev (`actionfleet-dev`) | `https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp` | Active dev; native Codex, Claude and Cursor cloud task loops reported |
-| Action Fleet (`actionfleet`) | `https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp` | Prepared production profile; unavailable until OAuth activation and acceptance |
+| Action Fleet Dev (`actionfleet-dev`) | `https://api.actionfleet.dev/mcp` | Active dev; native Codex, Claude and Cursor cloud task loops reported |
+| Action Fleet (`actionfleet`) | `https://api.actionfleet.ai/mcp` | Prepared production profile; not installable until native harness acceptance |
 
-These are the untagged Cloud Run **service** URLs. Their traffic moves to each
-environment's promoted revision; an existing connection receives that revision
-without changing its URL. Do not install `pr-*---` or `sha-*---` revision URLs as
-permanent connections. Production promotion remains separate from main's dev
-rollout. The production service URL is inventory-confirmed, but that alone does
-not mean its MCP/OAuth service is active.
+These are the API's branded hosts. Their traffic moves to each environment's
+promoted revision; an existing connection receives that revision without changing
+its URL. Connections made on the earlier Cloud Run service URLs keep working (the
+server lists them as aliases); reinstall or reconnect on the branded host when
+convenient. Do not install `pr-*---` or `sha-*---` revision URLs as permanent
+connections. Production promotion remains separate from main's dev rollout; a
+production endpoint that answers discovery is not by itself an accepted harness
+profile.
 
 Existing **Actionfleet Dev** connections using the dev URL already receive server
-updates. Keep them while testing plugin installation; avoid duplicate task claims
-from two connections. Complete browser OAuth using the intended Fleet account.
+updates. Use one connection per host: the plugin's server and a hand-added server
+or claude.ai connector to the same address are separate crew devices that could
+each claim Ships, so remove the one you do not use. Complete browser OAuth using the intended Fleet account.
 No bearer tokens, client secrets or request headers are needed for normal DCR
 setup. Public onboarding lives at the same origin's `/public/mcp`; authorized
 work lives at `/mcp`.
@@ -49,16 +52,24 @@ step; this repository does not imply vendor approval.
 
 ### Codex
 
-For clients supporting Git marketplaces:
-
 ```sh
 codex plugin marketplace add actionfleetai/actionfleet-plugin --ref main
+codex plugin add actionfleet-dev@actionfleet
+codex mcp login actionfleet-dev
 ```
 
-Then install **Action Fleet Dev** from the app's Plugins directory under the
-Action Fleet marketplace. For managed hosted workspaces, an administrator can
-import `https://github.com/actionfleetai/actionfleet-plugin` through the workspace
-plugin marketplace settings. Availability varies by surface and workspace policy.
+Or install **Action Fleet Dev** from the app's Plugins directory under the Action
+Fleet marketplace and approve the sign-in it offers. Then ask Codex to *set up this
+harness for Action Fleet*; the plugin's onboarding skill bootstraps and reports the
+required checks. `codex mcp login` registers `http://127.0.0.1:<port>/callback`, so the
+server must allow `http://127.0.0.1/callback` (`scripts/configure_dev_callbacks.py
+--harness codex` adds it to dev's list; deploy dev afterwards).
+
+Each package carries a native `.codex-plugin/plugin.json`: Codex reads a root
+`plugin.json` first and loads no MCP servers from it, so packages ship none. For
+managed hosted workspaces, an administrator can import
+`https://github.com/actionfleetai/actionfleet-plugin` through the workspace plugin
+marketplace settings. Availability varies by surface and workspace policy.
 Local CLI installation does not install a plugin into a Codex cloud chat. Until
 that host's package import is available, keep the hosted custom MCP connection at
 the stable dev URL and select it in the cloud chat.
@@ -70,9 +81,10 @@ claude plugin marketplace add actionfleetai/actionfleet-plugin
 claude plugin install actionfleet-dev@actionfleet
 ```
 
-Enable **auto-update** for the Action Fleet marketplace in `/plugin` →
-Marketplaces. Third-party marketplaces default to auto-update off. Install and
-authenticate through your browser; inspect `/mcp` if a bundled server needs consent.
+Then `/reload-plugins` (or start a new session), open `/mcp`, choose
+`plugin:actionfleet-dev:actionfleet-dev` and **Authenticate** in the browser, and run
+`/actionfleet-dev:setup`. Enable **auto-update** for the Action Fleet marketplace in
+`/plugin` → Marketplaces; third-party marketplaces default to auto-update off.
 
 Claude Code **cloud** does not inherit a plugin installed on your local computer.
 For the cloud-first path, add **Action Fleet Dev** at
@@ -103,8 +115,8 @@ server must allow `https://www.cursor.com/agents/mcp/oauth/callback`. Desktop's
 `http://localhost:8787/callback` is covered by the configured localhost callback
 with an ephemeral port. No static OAuth client or bearer secret is required.
 
-The package includes the portable `plugin.json`/`mcp.json` and native
-`.cursor-plugin/plugin.json`; both use the same skills. No CLI-only install step
+The package includes the portable `mcp.json` and native
+`.cursor-plugin/plugin.json`; every host uses the same skills. No CLI-only install step
 is presented as proof that a Cursor cloud agent is connected.
 
 ## What updates, and when
@@ -160,7 +172,10 @@ python3 scripts/catalog.py --check
 python3 scripts/catalog.py --archives /tmp/actionfleet-release
 ```
 
-Never hand-edit generated packages. Before a package release, run
+`python3 scripts/check_codex_package.py` asks a real Codex (`codex app-server`,
+throwaway `CODEX_HOME`, no sign-in) what it loads from each package and fails
+unless both MCP servers, the three skills and the onboarding skill appear; CI runs
+it with a pinned Codex. Never hand-edit generated packages. Before a package release, run
 `python3 scripts/release_version.py bump` after fetching/rebasing main. It updates
 `release.json`, the canonical manifest and generated packages together. Releases
 use the **Los Angeles date plus build**, matching the mobile date convention:

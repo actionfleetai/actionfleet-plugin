@@ -16,8 +16,10 @@ RESOURCE = 'repos/actionfleetai/fleet/actions/variables/' + VARIABLE
 CALLBACKS = {
     'cursor': ['https://www.cursor.com/agents/mcp/oauth/callback', 'http://localhost/callback'],
     'claude': ['https://claude.ai/api/mcp/auth_callback', 'http://localhost/callback'],
+    # `codex mcp login` registers http://127.0.0.1:<ephemeral port>/callback; Fleet lets only the port vary.
+    'codex': ['http://127.0.0.1/callback'],
 }
-DEV_ORIGIN = 'https://af-platform-api-nzjgusc4sq-uw.a.run.app'
+DEV_ORIGIN = 'https://api.actionfleet.dev'
 
 
 def updated(raw, harness):

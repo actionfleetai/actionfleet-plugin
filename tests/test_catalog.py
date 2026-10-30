@@ -21,8 +21,14 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(set(portable), {p['name'], p['name'] + '-setup'})
             self.assertEqual(portable[p['name']]['url'], p['mcp_url'])
             self.assertEqual(claude[p['name']]['url'], p['mcp_url'])
-            for path in ('plugin.json', '.claude-plugin/plugin.json', '.cursor-plugin/plugin.json'):
+            for path in ('.codex-plugin/plugin.json', '.claude-plugin/plugin.json', '.cursor-plugin/plugin.json'):
                 self.assertEqual(json.loads(files[root + path])['name'], p['name'])
+            # Codex reads a root plugin.json first and loads no MCP servers from it.
+            self.assertNotIn(root + 'plugin.json', files)
+            codex = json.loads(files[root + '.codex-plugin/plugin.json'])
+            self.assertEqual((codex['skills'], codex['mcpServers']), ('./skills/', './.mcp.json'))
+            self.assertEqual(codex['interface']['displayName'], p['display_name'])
+            self.assertIn(root + codex['extensions']['com.openai']['onboardingSkill'][2:], files)
             self.assertEqual(json.loads(files[root + 'skills/setup/references/installation.json'])['channel'], p['channel'])
             for skill in ('setup', 'work-task', 'coordinate'):
                 self.assertEqual(files[root + f'skills/{skill}/SKILL.md'],

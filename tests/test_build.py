@@ -31,6 +31,8 @@ class PackageTests(unittest.TestCase):
             with zipfile.ZipFile(archive) as z:
                 names = z.namelist()
                 self.assertIn('actionfleet/mcp.json', names)
+                self.assertIn('actionfleet/.codex-plugin/plugin.json', names)
+                self.assertNotIn('actionfleet/plugin.json', names)
                 self.assertIn('actionfleet/LICENSE', names)
                 self.assertIn('actionfleet/skills/setup/SKILL.md', names)
                 self.assertIn('actionfleet/skills/coordinate/SKILL.md', names)

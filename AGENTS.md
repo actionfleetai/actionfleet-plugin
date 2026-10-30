@@ -22,8 +22,8 @@ For a package change: checkpoint locally, fetch/rebase main, then run
 `python3 scripts/release_version.py bump` once to allocate the next Los Angeles
 date/build. This synchronizes `release.json`, manifest versions and generated
 packages/catalogs. Run `python3 -m unittest discover -s tests`,
-`python3 scripts/catalog.py --check`, and strict Claude package/catalog validation
-when packaging changes. Fetch again; rebase/recheck affected changes if main
+`python3 scripts/catalog.py --check`, strict Claude package/catalog validation and
+`python3 scripts/check_codex_package.py` when packaging changes. Fetch again; rebase/recheck affected changes if main
 advanced. Recheck Fleet authority, then normal fast-forward push to main.
 Never reuse a published date/build with different contents or move a release tag.
 Documentation-only/helper changes that do not change package contents need no

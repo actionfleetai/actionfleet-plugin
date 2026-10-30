@@ -106,7 +106,7 @@ def archives(output):
         if not p['installable']:
             continue
         prefix = f"packages/{p['name']}/"
-        version = json.loads(files[prefix + 'plugin.json'])['version']
+        version = json.loads(files[prefix + '.codex-plugin/plugin.json'])['version']
         path = output / f"{p['name']}-{version}.zip"
         with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as z:
             for name, data in sorted(files.items()):

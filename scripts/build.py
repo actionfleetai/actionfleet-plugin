@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate complete portable/OpenAI/Claude packages from one public source."""
+"""Generate complete Codex/Claude/Cursor packages from one public source."""
 import argparse
 import json
 from pathlib import Path
@@ -45,7 +45,9 @@ def build(url, output, source=SOURCE, *, name=None, display_name=None):
         manifest['extensions']['com.openai']['interface']['displayName'] = display_name
     plugin = output / 'plugins/actionfleet'
     shutil.copytree(source, plugin)
-    write(plugin / 'plugin.json', manifest)
+    # Codex reads a root plugin.json before .codex-plugin/plugin.json and loads no MCP servers from it (0.162), so the
+    # portable manifest stays the source only and each host gets its native manifest.
+    (plugin / 'plugin.json').unlink()
     shutil.copyfile(ROOT / 'LICENSE', plugin / 'LICENSE')
     public_url = url[:-4] + '/public/mcp'
     write(plugin / 'mcp.json', {
@@ -61,12 +63,14 @@ def build(url, output, source=SOURCE, *, name=None, display_name=None):
         name + '-setup': {'type': 'http', 'url': public_url},
         name: {'type': 'http', 'url': url},
     }})
-    write(plugin / '.claude-plugin/plugin.json', {k: manifest[k] for k in
-          ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')})
-    write(plugin / '.cursor-plugin/plugin.json', {
-        **{k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')},
-        'displayName': display_name or manifest['extensions']['com.openai']['interface']['displayName'],
+    common = {k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')}
+    openai = manifest['extensions']['com.openai']
+    write(plugin / '.codex-plugin/plugin.json', {
+        **common, 'skills': './skills/', 'mcpServers': './.mcp.json', 'interface': openai['interface'],
+        'extensions': {'com.openai': {'onboardingSkill': openai['onboardingSkill']}},
     })
+    write(plugin / '.claude-plugin/plugin.json', common)
+    write(plugin / '.cursor-plugin/plugin.json', {**common, 'displayName': openai['interface']['displayName']})
     write(output / '.agents/plugins/marketplace.json', {
         'name': 'actionfleet', 'interface': {'displayName': 'Action Fleet Plugins'},
         'plugins': [{'name': name, 'source': {'source': 'local', 'path': './plugins/actionfleet'},

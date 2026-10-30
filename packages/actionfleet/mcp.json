@@ -3,7 +3,7 @@
   "mcpServers": {
     "actionfleet-setup": {
       "type": "streamable-http",
-      "url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/public/mcp",
+      "url": "https://api.actionfleet.ai/public/mcp",
       "extensions": {
         "com.openai": {
           "auth": {
@@ -14,7 +14,7 @@
     },
     "actionfleet": {
       "type": "streamable-http",
-      "url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp",
+      "url": "https://api.actionfleet.ai/mcp",
       "extensions": {
         "com.openai": {
           "auth": {

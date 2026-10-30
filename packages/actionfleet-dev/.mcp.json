@@ -2,11 +2,11 @@
   "mcpServers": {
     "actionfleet-dev-setup": {
       "type": "http",
-      "url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/public/mcp"
+      "url": "https://api.actionfleet.dev/public/mcp"
     },
     "actionfleet-dev": {
       "type": "http",
-      "url": "https://af-platform-api-nzjgusc4sq-uw.a.run.app/mcp"
+      "url": "https://api.actionfleet.dev/mcp"
     }
   }
 }

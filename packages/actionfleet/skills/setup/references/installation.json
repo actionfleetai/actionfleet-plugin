@@ -2,12 +2,12 @@
   "channel": "prod",
   "name": "actionfleet",
   "display_name": "Action Fleet",
-  "mcp_url": "https://af-platform-api-qk3fflod5q-uw.a.run.app/mcp",
+  "mcp_url": "https://api.actionfleet.ai/mcp",
   "installable": false,
   "protocol": "actionfleet/2",
-  "plugin_version": "2026.1024.1",
-  "release_date": "2026-10-24",
+  "plugin_version": "2026.1029.1",
+  "release_date": "2026-10-29",
   "release_build": 1,
-  "release_label": "2026.10.24 (1)",
+  "release_label": "2026.10.29 (1)",
   "release_timezone": "America/Los_Angeles"
 }

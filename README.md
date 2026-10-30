@@ -53,15 +53,15 @@ step; this repository does not imply vendor approval.
 ### Codex
 
 ```sh
-codex plugin marketplace add actionfleetai/actionfleet-plugin --ref main
-codex plugin add actionfleet-dev@actionfleet
-codex mcp login actionfleet-dev
+codex plugin marketplace add actionfleetai/actionfleet-plugin && codex plugin add actionfleet-dev@actionfleet && codex mcp login actionfleet-dev
 ```
 
-Or install **Action Fleet Dev** from the app's Plugins directory under the Action
-Fleet marketplace and approve the sign-in it offers. Then ask Codex to *set up this
-harness for Action Fleet*; the plugin's onboarding skill bootstraps and reports the
-required checks. `codex mcp login` registers `http://127.0.0.1:<port>/callback`, so the
+Each command is safe to run again. `codex mcp login` opens the browser: approve with
+your Fleet account, then start a new Codex session. Its first Action Fleet request
+bootstraps; ask it to *set up this harness for Action Fleet* to have the onboarding
+skill report the required checks now. Or install **Action Fleet Dev** from the app's
+Plugins directory under the Action Fleet marketplace and approve the sign-in it offers.
+`codex mcp login` registers `http://127.0.0.1:<port>/callback`, so the
 server must allow `http://127.0.0.1/callback` (`scripts/configure_dev_callbacks.py
 --harness codex` adds it to dev's list; deploy dev afterwards).
 
@@ -77,14 +77,20 @@ the stable dev URL and select it in the cloud chat.
 ### Claude Code
 
 ```sh
-claude plugin marketplace add actionfleetai/actionfleet-plugin
-claude plugin install actionfleet-dev@actionfleet
+claude plugin marketplace add actionfleetai/actionfleet-plugin && claude plugin install actionfleet-dev@actionfleet
 ```
 
-Then `/reload-plugins` (or start a new session), open `/mcp`, choose
-`plugin:actionfleet-dev:actionfleet-dev` and **Authenticate** in the browser, and run
-`/actionfleet-dev:setup`. Enable **auto-update** for the Action Fleet marketplace in
-`/plugin` → Marketplaces; third-party marketplaces default to auto-update off.
+Then, in a new session, open `/mcp`, choose `plugin:actionfleet-dev:actionfleet-dev`
+and **Authenticate** in the browser (in a session that was already open, run
+`/reload-plugins` first). Its first Action Fleet request bootstraps;
+`/actionfleet-dev:setup` reports the required checks on demand. Enable
+**auto-update** for the Action Fleet marketplace in `/plugin` → Marketplaces;
+third-party marketplaces default to auto-update off.
+
+A repository prepared through the server's `get_guide("setup")` names this marketplace
+and plugin in `.claude/settings.json` (`extraKnownMarketplaces`, `enabledPlugins`) and
+skips its `.mcp.json` copy, so Claude Code loads the plugin once you trust the folder,
+with no install command.
 
 Claude Code **cloud** does not inherit a plugin installed on your local computer.
 For the cloud-first path, add **Action Fleet Dev** at
@@ -114,6 +120,9 @@ under **Team MCP Servers** in Dashboard → Plugins & MCPs. The dev
 server must allow `https://www.cursor.com/agents/mcp/oauth/callback`. Desktop's
 `http://localhost:8787/callback` is covered by the configured localhost callback
 with an ephemeral port. No static OAuth client or bearer secret is required.
+
+Without the plugin, Crew › Connections › **Connect harness** on the Fleet site has
+**Add to Cursor** and **Install in VS Code** links that add the MCP alone.
 
 The package includes the portable `mcp.json` and native
 `.cursor-plugin/plugin.json`; every host uses the same skills. No CLI-only install step

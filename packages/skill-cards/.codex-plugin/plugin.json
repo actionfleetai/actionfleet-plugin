@@ -1,7 +1,7 @@
 {
   "name": "skill-cards",
   "version": "2026.1103.2",
-  "description": "Opt-in Actionfleet skill: write and revise agent skills as short, testable cards.",
+  "description": "Opt-in Actionfleet skill: write and tighten agent skills that are short and run the same way every time.",
   "author": {
     "name": "Actionfleet",
     "url": "https://actionfleet.ai"
@@ -17,7 +17,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Skill Cards",
-    "shortDescription": "Write skills as short, testable cards",
+    "shortDescription": "Write short skills that run the same way",
     "developerName": "Actionfleet",
     "category": "Productivity",
     "websiteURL": "https://actionfleet.ai",

@@ -52,11 +52,3 @@ Reporting, releasing or a STOP doesn't change the title.
 
 - DONE: the host shows the script's title.
 - SKIPPED: no title tool, harness unknown, or the script refused. Say nothing; don't ask the person to rename the chat.
-
-## Tests
-
-- Fires: a cloud session crews SHIP-7 to fix a bug → `☁️ SHIP-7 fix: <rest>`.
-- Doesn't fire: "rename SHIP-7" (the Ship's title, not the chat's).
-- False branch: the work isn't known yet → no type (`☁️ SHIP-7 <rest>`); Claude Code CLI, no title tool → title
-  unchanged, no message.
-- Rules: `python3 <this skill's folder>/scripts/title.py --test` runs the script's examples.

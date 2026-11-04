@@ -147,7 +147,7 @@ the opt-in, and uninstalling it opts out.
 
 | Add-on | What it does |
 | --- | --- |
-| `skill-cards` | Writes and revises agent skills as short, testable cards (trigger, facts with sources, rules, steps, faults, exits), with Python scripts for rules a program can decide, and checks them with its `check_card.py`. |
+| `skill-cards` | Writes and tightens agent skills: a description that fires on the right request, a few numbered steps, Python scripts for rules a program can decide, and its `check_card.py` for spec errors and bloat. |
 | `session-titles` | Prefixes each chat's title with where it runs (💻 local, ☁️ cloud), its Ship ref (after its fleet's emoji, when it has one) and, once the work is known, its commit type, such as `☁️ 🚀 SHIP-12 fix: Login loop`. Its `title.py` owns the format. |
 | `commit-messages` | Writes and checks commit messages as [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`type(scope)!: summary`, body, trailers), following each repository's own identity and trailer policy. Its `commit.py` owns the format and the types, and also runs as a commit-msg hook. |
 

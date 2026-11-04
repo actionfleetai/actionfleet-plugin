@@ -13,7 +13,6 @@ TAG = re.compile(r'<[A-Za-z/][^<>]*>')
 CODE = re.compile(r'`[^`]*`')
 LINK = re.compile(r'\]\(([^)#\s]+)\)')
 PATH = re.compile(r'`((?:references|scripts|assets)/[^`\s]+)`')
-CARD = ('Facts', 'Procedure', 'Exits')
 WHEN = re.compile(r'\buse (when|whenever|for|after|before|right|only|to)\b', re.I)
 
 
@@ -115,10 +114,8 @@ def check(folder):
         elif path.suffix == '.md' and local(path.read_text(encoding='utf-8')):
             warnings.append(f'{target}: links further files; keep references one level deep')
 
-    headings = set(re.findall(r'^##\s+(.+?)\s*$', body, re.M))
-    missing = [title for title in CARD if title not in headings]
-    if missing:
-        warnings.append('card: no ' + ', '.join(f'## {title}' for title in missing))
+    if re.search(r'^##\s+Tests\s*$', body, re.M):
+        warnings.append('Tests: keep test prompts out of SKILL.md; the body loads on every use')
     facts = section(body, 'Facts')
     if facts and not ('Source' in facts and 'If unknown' in facts):
         warnings.append('Facts: give each fact a Source and an If unknown column')

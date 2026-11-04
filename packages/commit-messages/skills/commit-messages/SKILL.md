@@ -67,10 +67,3 @@ A pull request's title is the subject its commit would have.
 
 - DONE: `check` passes; report the subject.
 - SKIPPED: nothing staged.
-
-## Tests
-
-- Fires: "commit this fix to the catalog check" → `fix(catalog): <summary>`, and `check` passes.
-- Doesn't fire: "what changed in the last release?"
-- False branch: a public repository whose policy asks for `Ship:` → no Ship trailer.
-- Rules: `python3 <this skill's folder>/scripts/commit.py --test` runs the script's examples.

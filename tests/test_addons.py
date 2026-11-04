@@ -113,3 +113,5 @@ class AddonTests(unittest.TestCase):
             self.assertTrue(any(e.startswith('name:') for e in errors))
             self.assertTrue(any('missing' in e for e in errors))
             self.assertTrue(any('Use when' in w for w in warnings))
+            (skill / 'SKILL.md').write_text('---\nname: Bad_Name\ndescription: Does things. Use when asked.\n---\n\n## Tests\n')
+            self.assertTrue(any(w.startswith('Tests:') for w in check_card.check(skill)[1]))

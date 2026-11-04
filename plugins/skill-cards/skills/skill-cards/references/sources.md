@@ -17,7 +17,11 @@ What agents need that a crew member doesn't:
 - **A source for every fact.** An agent fills gaps with plausible guesses, so each fact names where it
   comes from and what happens when it's unknown.
 - **An Otherwise row.** Every rule ends in a default, so no state is undefined.
-- **Tests first.** Three prompts written before the card show whether the description fires.
+- **Tests outside the card.** Three prompts tried in a fresh session show whether the description fires;
+  they stay out of SKILL.md, which loads on every use.
+- **Parts only when needed.** In a with/without `claude plugin eval` (Nov 2026, writing and tightening a
+  skill), a card that required every section made skills about 45% longer and scored below no skill at
+  all; numbered steps with optional parts scored above it at about the same length.
 - **A small budget.** Hosts load every description at start and the body on use, so each line costs
   context in every session.
 - **Scripts for rules a program can decide.** A card read by a model can be applied differently each

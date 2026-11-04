@@ -14,7 +14,7 @@
     {
       "name": "skill-cards",
       "source": "./packages/skill-cards",
-      "description": "Opt-in Actionfleet skill: write and revise agent skills as short, testable cards.",
+      "description": "Opt-in Actionfleet skill: write and tighten agent skills that are short and run the same way every time.",
       "version": "2026.1103.2"
     },
     {

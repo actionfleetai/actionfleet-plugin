@@ -18,6 +18,7 @@ ADDONS = {
     'skill-cards': {'plugin.json', 'skills/skill-cards/SKILL.md', 'skills/skill-cards/assets/card.md',
                     'skills/skill-cards/references/sources.md', 'skills/skill-cards/scripts/check_card.py'},
     'session-titles': {'plugin.json', 'skills/session-titles/SKILL.md', 'skills/session-titles/scripts/title.py'},
+    'commit-messages': {'plugin.json', 'skills/commit-messages/SKILL.md', 'skills/commit-messages/scripts/commit.py'},
 }
 ADDON_ICON = ROOT / 'icons/actionfleet.png'  # Add-ons don't depend on an environment, so they use the brand's icon.
 

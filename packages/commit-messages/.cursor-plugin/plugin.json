@@ -1,0 +1,19 @@
+{
+  "name": "commit-messages",
+  "version": "2026.1103.1",
+  "description": "Opt-in Actionfleet skill: write and check commit messages as Conventional Commits.",
+  "author": {
+    "name": "Actionfleet",
+    "url": "https://actionfleet.ai"
+  },
+  "homepage": "https://actionfleet.ai",
+  "repository": "https://github.com/actionfleetai/actionfleet-plugin",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "commits",
+    "conventional-commits"
+  ],
+  "displayName": "Commit Messages",
+  "logo": "assets/icon.png"
+}

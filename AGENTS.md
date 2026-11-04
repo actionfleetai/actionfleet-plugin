@@ -21,15 +21,19 @@ them, not generated `packages/`.
 not enable production just because a service URL exists. Public resources must
 never contain credentials, private task/account IDs or infrastructure secrets.
 
-For a package change: checkpoint locally, fetch/rebase main, then run
-`python3 scripts/release_version.py bump` once to allocate the next Los Angeles
-date/build. This synchronizes `release.json`, manifest versions and generated
-packages/catalogs. Run `python3 -m unittest discover -s tests`,
-`python3 scripts/catalog.py --check`, strict Claude package/catalog validation and
-`python3 scripts/check_codex_package.py` when packaging changes. Fetch again; rebase/recheck affected changes if main
-advanced. Recheck Fleet authority, then normal fast-forward push to main.
-Never reuse a published date/build with different contents or move a release tag.
-Documentation-only/helper changes that do not change package contents need no
+Commit subjects are Conventional Commits, checked by the `commit-messages` add-on's
+`commit.py` (`.githooks/commit-msg`). This repository is public: no `Ship:` trailers or
+other private refs. A change to a shipped skill is `feat` or `fix`, not `docs`.
+
+To land: checkpoint locally, then run `python3 scripts/land.py`. It rebases on main,
+checks unpushed commit messages, allocates the next Los Angeles date/build only when a
+package changed (only the changed plugins take the new version), runs the tests,
+catalog and release checks, and repeats if main moves. When it prints `ready`, recheck
+Fleet authority, then normal fast-forward push to main; CI publishes the release with
+notes from commit subjects. Run strict Claude package/catalog validation and
+`python3 scripts/check_codex_package.py` when packaging changes (land.py runs them when
+`claude` and `codex` are installed). Never reuse a published date/build with different
+contents or move a release tag. Changes that do not change package contents need no
 new package version. Report exact source, passing CI/release and remaining native
 host acceptance separately. Server deployments, tool catalog refresh and installed
 skill updates are independent; the README explains each host's update controls.

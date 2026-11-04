@@ -10,12 +10,28 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.14'
       - run: python -m unittest discover -s tests
       - run: python scripts/catalog.py --check
+      - name: Refuse package changes without a release (main only; scripts/land.py adds the release)
+        run: |
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            python scripts/release_version.py check
+          else
+            python scripts/release_version.py check || echo "::warning title=Release::scripts/land.py adds the release before main"
+          fi
+      - name: Check new commit messages (warnings; scripts/land.py and the commit-msg hook refuse)
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          range="HEAD~1..HEAD"
+          if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then range="$BEFORE..HEAD"; fi
+          python plugins/commit-messages/skills/commit-messages/scripts/commit.py check --public --range "$range" \
+            || echo "::warning title=Commit messages::Some subjects in $range aren't Conventional Commits; see this step's log"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -81,18 +97,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          version=$(python3 -c 'import json; print(json.load(open("plugins/actionfleet/plugin.json"))["version"])')
+          version=$(python3 scripts/release_version.py --field version)
           label=$(python3 scripts/release_version.py --field label)
           tag="v$version"
+          # A published release never changes: what hosts install must match its tag.
           if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
-            git diff --exit-code "$tag" -- plugins packages profiles.json release.json scripts/build.py scripts/catalog.py scripts/release_version.py .agents .claude-plugin .cursor-plugin
+            git diff --exit-code "$tag" -- packages .agents/plugins .claude-plugin .cursor-plugin
           fi
           if gh release view "$tag" >/dev/null 2>&1; then
             mkdir previous-release
             gh release download "$tag" --pattern SHA256SUMS --dir previous-release
             cmp previous-release/SHA256SUMS release/SHA256SUMS
           else
+            python3 -m pip install --quiet git-cliff==2.14.2
+            {
+              git cliff --config cliff.toml --unreleased --tag "$tag" --strip header
+              echo
+              echo '### Plugins'
+              echo
+              python3 scripts/release_version.py check --notes
+              echo
+              echo 'Install from the Git marketplace; see the README for each host. Hosts offer an update only for plugins marked updated. Actionfleet (production) is listed but not installable until its OAuth and native acceptance pass. Assets are deterministic ZIPs with SHA-256 sums.'
+            } > release-notes.md
             gh release create "$tag" release/* --target "$GITHUB_SHA" --prerelease \
-              --title "Actionfleet $label" \
-              --notes 'Install Actionfleet Dev from the Git marketplace. Production is prepared but unavailable until its OAuth and native acceptance pass. Includes shared setup/task/coordination skills, vendor manifests, deterministic ZIP and SHA-256 sums. See README for installation and update controls.'
+              --title "Actionfleet $label" --notes-file release-notes.md
           fi

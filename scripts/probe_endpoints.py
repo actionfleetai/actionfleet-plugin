@@ -11,7 +11,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import build_opener, HTTPRedirectHandler, Request
 
 from catalog import profiles
-from release_version import read_release
+from release_version import plugin_version as core_version
 from skills import skill_tools, snapshot, version as parse_version
 
 
@@ -45,7 +45,7 @@ def read(url, payload=None):
 
 def probe(profile, fetch=read, *, plugin_version=None, needed=None, known=None):
     origin = profile['mcp_url'][:-4]
-    plugin_version = plugin_version or read_release()['version']
+    plugin_version = plugin_version or core_version()
     needed = skill_tools() if needed is None else needed
     known = snapshot() if known is None else known
     auth = fetch(origin + '/.well-known/oauth-authorization-server')

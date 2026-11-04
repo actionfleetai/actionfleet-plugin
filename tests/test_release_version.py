@@ -4,7 +4,9 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from release_version import identity, next_release, ZONE
+import doctest
+import release_version
+from release_version import identity, next_release, order, parse, ZONE
 
 
 class ReleaseIdentityTests(unittest.TestCase):
@@ -35,3 +37,16 @@ class ReleaseIdentityTests(unittest.TestCase):
         for build in (True, 0, -1, '2'):
             with self.subTest(build=build), self.assertRaises(ValueError):
                 identity(self.value('2026-10-15', build))
+
+    def test_versions_parse_back_to_their_release_and_order_by_date(self):
+        for day, build in (('2026-01-05', 2), ('2026-11-03', 1), ('2026-12-31', 9)):
+            value = identity(self.value(day, build))
+            self.assertEqual(parse(value['version']), value)
+        self.assertLess(order('2026.1231.9'), order('2027.101.1'))
+        self.assertLess(order('2026.1103.1'), order('2026.1103.2'))
+        for bad in ('2026.0105.1', '2026.1301.1', '2026.230.1', '2026.105.0', 'v2026.105.1', '1.2.3'):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                parse(bad)
+
+    def test_changed_plugins_examples(self):
+        self.assertEqual(doctest.testmod(release_version).failed, 0)

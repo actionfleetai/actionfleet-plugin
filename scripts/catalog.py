@@ -9,7 +9,7 @@ import tempfile
 import zipfile
 
 from build import ADDONS, ROOT, addon, build, endpoint
-from release_version import read_release
+from release_version import order, parse, read_release
 
 CATALOGS = ('.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json',
             '.cursor-plugin/marketplace.json')
@@ -43,9 +43,12 @@ def encoded(value):
 def generated(rows=None):
     rows = profiles() if rows is None else rows
     release = read_release()
-    manifest = json.loads((Path(__file__).resolve().parents[1] / 'plugins/actionfleet/plugin.json').read_text())
-    if manifest['version'] != release['version']:
-        raise ValueError('Plugin version differs from the release date/build; run release_version.py bump.')
+    # Each plugin keeps the version of the release where its package last changed; release.json is the newest.
+    source = Path(__file__).resolve().parents[1] / 'plugins'
+    versions = {name: json.loads((source / name / 'plugin.json').read_text())['version'] for name in ['actionfleet', *ADDONS]}
+    if max(versions.values(), key=order) != release['version']:
+        raise ValueError('release.json must name the newest plugin version; run release_version.py bump.')
+    core = parse(versions['actionfleet'])
     files = {}
     entries = []
     for p in rows:
@@ -53,9 +56,9 @@ def generated(rows=None):
             package = Path(tmp) / 'package'
             build(p['mcp_url'], package, name=p['name'], display_name=p['display_name'])
             root = package / 'plugins/actionfleet'
-            meta = {**p, 'plugin_version': release['version'], 'release_date': release['date'],
-                    'release_build': release['build'], 'release_label': release['label'],
-                    'release_timezone': release['timezone']}
+            meta = {**p, 'plugin_version': core['version'], 'release_date': core['date'],
+                    'release_build': core['build'], 'release_label': core['label'],
+                    'release_timezone': core['timezone']}
             files[f"packages/{p['name']}/skills/setup/references/installation.json"] = encoded(meta)
             for file in sorted(root.rglob('*')):
                 if file.is_file():
@@ -68,8 +71,6 @@ def generated(rows=None):
     for name in ADDONS:
         package = addon(name)
         manifest = json.loads(package['.claude-plugin/plugin.json'])
-        if manifest['version'] != release['version']:
-            raise ValueError(f'Add-on {name} differs from the release date/build; run release_version.py bump.')
         files.update({f'packages/{name}/{path}': data for path, data in package.items()})
         addons.append({'name': name, 'source': './packages/' + name, 'description': manifest['description'],
                        'version': manifest['version']})

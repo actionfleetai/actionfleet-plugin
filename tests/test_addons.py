@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import build
 import catalog
-from release_version import read_release
+from release_version import order, plugin_version, read_release
 
 sys.dont_write_bytecode = True  # Loading the add-on's script must not leave __pycache__ in its reviewed source.
 spec = importlib.util.spec_from_file_location('check_card', ROOT / 'plugins/skill-cards/skills/skill-cards/scripts/check_card.py')
@@ -19,13 +19,26 @@ check_card = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check_card)
 
 
+def script(path):
+    spec = importlib.util.spec_from_file_location(Path(path).stem, ROOT / path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+commit = script('plugins/commit-messages/skills/commit-messages/scripts/commit.py')
+title = script('plugins/session-titles/skills/session-titles/scripts/title.py')
+
+
 class AddonTests(unittest.TestCase):
     """Opt-in add-ons are skills-only plugins: installing one is the opt-in, and none carries an MCP server."""
 
-    def test_addons_are_skills_only_with_release_version(self):
+    def test_addons_are_skills_only_with_their_own_release_version(self):
         files = catalog.generated()
-        version = read_release()['version']
+        newest = order(read_release()['version'])
         for name in build.ADDONS:
+            version = plugin_version(name)
+            self.assertLessEqual(order(version), newest)
             root = f'packages/{name}/'
             package = {path[len(root):] for path in files if path.startswith(root)}
             self.assertFalse(package & {'mcp.json', '.mcp.json', 'plugin.json'}, name)
@@ -62,6 +75,23 @@ class AddonTests(unittest.TestCase):
             refused = run(*args)
             self.assertEqual((refused.returncode, refused.stdout), (2, ''), args)
             self.assertIn('refused:', refused.stderr)
+
+    def test_titles_and_commits_share_one_type_list(self):
+        self.assertEqual(title.TYPES, commit.TYPES)
+        types = lambda module: [line for line in module.__doc__.splitlines() if line.split()[:1] and line.split()[0] in commit.TYPES]
+        self.assertEqual(types(title), types(commit))
+        self.assertEqual(len(types(commit)), len(commit.TYPES))
+
+    def test_commit_check_refuses_a_bad_message_file_and_passes_a_good_one(self):
+        script = ROOT / 'plugins/commit-messages/skills/commit-messages/scripts/commit.py'
+        with tempfile.TemporaryDirectory() as tmp:
+            message = Path(tmp) / 'COMMIT_EDITMSG'
+            for text, code in (('feat(catalog): list add-on versions\n\n# Please enter the commit message\n', 0),
+                               ('Add add-on versions\n', 2), ('fix: keep refs\n\nShip: SHIP-7\n', 2)):
+                message.write_text(text)
+                run = subprocess.run([sys.executable, '-I', str(script), 'check', '--public', '--message-file', str(message)],
+                                     capture_output=True, text=True)
+                self.assertEqual(run.returncode, code, run.stderr)
 
     def test_addon_source_rejects_unreviewed_files(self):
         with tempfile.TemporaryDirectory() as tmp:

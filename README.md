@@ -148,7 +148,8 @@ the opt-in, and uninstalling it opts out.
 | Add-on | What it does |
 | --- | --- |
 | `skill-cards` | Writes and revises agent skills as short, testable cards (trigger, facts with sources, rules, steps, faults, exits), with Python scripts for rules a program can decide, and checks them with its `check_card.py`. |
-| `session-titles` | Prefixes each chat's title with where it runs (💻 local, ☁️ cloud) and its Ship ref, such as `☁️ SHIP-12 Fix login`. Its `title.py` owns the format. |
+| `session-titles` | Prefixes each chat's title with where it runs (💻 local, ☁️ cloud), its Ship ref and, once the work is known, its commit type, such as `☁️ SHIP-12 fix: Login loop`. Its `title.py` owns the format. |
+| `commit-messages` | Writes and checks commit messages as [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`type(scope)!: summary`, body, trailers), following each repository's own identity and trailer policy. Its `commit.py` owns the format and the types, and also runs as a commit-msg hook. |
 
 Each line installs from this GitHub repository and works whether or not the
 marketplace was added before; the update step brings an older copy up to date.
@@ -225,7 +226,8 @@ retain the labels recorded when those events happened.
 
 `plugins/actionfleet/` is the core plugin's skill source; each add-on's is
 `plugins/<add-on>/`, with its reviewed files listed in `ADDONS` in `scripts/build.py`.
-Add-ons carry the same release version as the core plugin. `profiles.json` declares the
+Each plugin keeps the version of the release where its package last changed, so hosts
+offer an update only for plugins that changed. `profiles.json` declares the
 environment endpoints and availability. Generate the tracked `packages/` and
 three root marketplace catalogs after edits:
 
@@ -249,9 +251,17 @@ Anthropic's directory listing; Claude Code ignores it).
 throwaway `CODEX_HOME`, no sign-in) what it loads from each package and fails
 unless its one MCP server, the three skills, the onboarding skill and its icon appear, and
 unless each add-on loads its skills and icon with no MCP server; CI runs
-it with a pinned Codex. Never hand-edit generated packages. Before a package release, run
-`python3 scripts/release_version.py bump` after fetching/rebasing main. It updates
-`release.json`, the canonical manifest and generated packages together. Releases
+it with a pinned Codex. Never hand-edit generated packages.
+
+Commit subjects are Conventional Commits (`commit-messages` add-on;
+`git config core.hooksPath .githooks` checks each one as you commit). To land, run
+`python3 scripts/land.py`: it rebases on main, checks commits not yet pushed anywhere,
+allocates a release only when a package changed (`release_version.py bump` sets that
+release's version on the changed plugins alone and regenerates packages), runs the
+checks, and repeats if main moves. It pushes nothing; push main when it prints `ready`.
+CI refuses package changes on main without a release (`release_version.py check`) and
+publishes the release with notes generated from commit subjects by
+[git-cliff](https://git-cliff.org) (`cliff.toml`). Releases
 use the **Los Angeles date plus build**, matching the mobile date convention:
 `2026.10.15 (1)` is plugin version `2026.1015.1` (`year.monthday.build`). Build 2
 is `2026.1015.2`; October 16 build 1 is `2026.1016.1`. January 5 uses `2026.105.1`

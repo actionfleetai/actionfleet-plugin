@@ -29,9 +29,8 @@ class SkillTests(unittest.TestCase):
             self.assertIn(needed, setup)
 
     def test_this_release_meets_the_server_minimum_it_was_written_for(self):
-        release = read_release()['version']
         manifest = json.loads((ROOT / 'plugins/actionfleet/plugin.json').read_text())['version']
-        self.assertEqual(release, manifest)
-        self.assertGreaterEqual(version(release), version(snapshot()['plugin_minimum']))
+        self.assertGreaterEqual(version(manifest), version(snapshot()['plugin_minimum']))
+        self.assertLessEqual(version(manifest), version(read_release()['version']))
         self.assertEqual(version('2026.101.3'), (2026, 101, 3))
         self.assertIsNone(version('v1'))

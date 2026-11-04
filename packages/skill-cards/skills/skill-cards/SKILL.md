@@ -6,8 +6,8 @@ description: Writes and revises agent skills (SKILL.md) as short, testable cards
 # Skill cards
 
 A card tells a capable agent who runs it, when, with what, how, and how it ends. Write only what the
-agent can't already know or infer. Blank card: `assets/card.md`. Worked example:
-`references/example-session-titles.md`.
+agent can't already know or infer. Blank card: `assets/card.md`. Worked example: the `session-titles`
+add-on in the same marketplace, a card that runs a script.
 
 ## Facts
 
@@ -28,6 +28,7 @@ First match wins in each table.
 
 | If a step is | Then write |
 | --- | --- |
+| a rule over facts the agent already holds (format, parse, validate, compute) | a stdlib Python script in `scripts/`: facts as flags, the answer on stdout, exit 2 with why when it refuses, and `--rules` and `--test` (its examples). The card names the facts, runs it and applies the answer |
 | fragile or exact (a command, a format, an API) | the exact command or format |
 | Otherwise | the intent and its limit, not a script |
 
@@ -50,7 +51,8 @@ First match wins in each table.
    Use the words the person would say. At most 1024 characters, no `<tags>`.
 3. Fill Facts: every fact the rules read, its only source, and what happens when it's unknown.
    "Don't guess" becomes an If unknown branch.
-4. Fill Rules as tables over the facts. First match wins; end each table with `Otherwise`.
+4. Fill Rules as tables over the facts. First match wins; end each table with `Otherwise`. Move each
+   rule a script can decide into one, and keep in the card only what needs judgment or the host.
 5. Fill Procedure: one numbered action per step, verb first. Put `WARNING:` (irreversible or
    outward-facing: delete, push, publish, spend, message people) or `CAUTION:` (wrong or wasted
    output) on the line before the step it guards, never with steps inside it.
@@ -67,7 +69,8 @@ First match wins in each table.
 | --- | --- | --- |
 | a Test fires when it shouldn't | add the near miss to `Not for` | nobody |
 | a Test doesn't fire | add the person's trigger words to the description | nobody |
-| `python3` is missing | apply the script's checks by reading it | the person |
+| a script's `--test` fails | fix the script or its examples before the card | nobody |
+| `python3` is missing | read the script and apply it by hand | the person |
 
 ## Exits
 
@@ -76,7 +79,7 @@ First match wins in each table.
 
 ## Tests
 
-- Fires: "make a skill that titles my chats with the Ship id" → a card in `~/.agents/skills`.
+- Fires: "make a skill that titles my chats with the Ship id" → a card whose title format is a script.
 - Doesn't fire: "what skills do I have installed?"
 - False branch: the trigger is "after crew_ship returns" → the card, plus advice to put the
   instruction in that tool's result.

@@ -147,19 +147,34 @@ the opt-in, and uninstalling it opts out.
 
 | Add-on | What it does |
 | --- | --- |
-| `skill-cards` | Writes and revises agent skills as short, testable cards (trigger, facts with sources, rules, steps, faults, exits) and checks them with its `check_card.py`. |
+| `skill-cards` | Writes and revises agent skills as short, testable cards (trigger, facts with sources, rules, steps, faults, exits), with Python scripts for rules a program can decide, and checks them with its `check_card.py`. |
+| `session-titles` | Prefixes each chat's title with where it runs (💻 local, ☁️ cloud) and its Ship ref, such as `☁️ SHIP-12 Fix login`. Its `title.py` owns the format. |
+
+Each line installs from this GitHub repository and works whether or not the
+marketplace was added before; the update step brings an older copy up to date.
+Replace `skill-cards` with the add-on you want.
 
 ```sh
-claude plugin marketplace add actionfleetai/actionfleet-plugin && claude plugin install skill-cards@actionfleet
+claude plugin marketplace add actionfleetai/actionfleet-plugin; claude plugin marketplace update actionfleet && claude plugin install skill-cards@actionfleet
 ```
 
 ```sh
-codex plugin marketplace add actionfleetai/actionfleet-plugin && codex plugin add skill-cards@actionfleet
+codex plugin marketplace add actionfleetai/actionfleet-plugin; codex plugin marketplace upgrade actionfleet && codex plugin add skill-cards@actionfleet
+```
+
+```sh
+copilot plugin marketplace add actionfleetai/actionfleet-plugin && copilot plugin install skill-cards@actionfleet
 ```
 
 In an open Claude Code session, run `/reload-plugins`; the skill is
-`/skill-cards:skill-cards`. In Cursor, install **Skill Cards** from the imported team
-marketplace; an admin who sets it to **Default Off** leaves each member to opt in.
+`/skill-cards:skill-cards`. If Claude says the marketplace's source doesn't match its
+`extraKnownMarketplaces` entry, add it from the source that entry lists, or change the
+entry to `{"source": "github", "repo": "actionfleetai/actionfleet-plugin"}`. In Cursor,
+install **Skill Cards** from the imported team marketplace; an admin who sets it to
+**Default Off** leaves each member to opt in. Without a team marketplace, copy
+`packages/<add-on>` into `~/.cursor/plugins/local/<add-on>` as a real folder and
+reload the window. GitHub Copilot in VS Code reads marketplaces from
+`chat.plugins.marketplaces` (with `chat.plugins.enabled`); that path is not yet checked.
 A plugin installed on one computer doesn't reach claude.ai/code cloud sessions or
 Codex cloud tasks. An organization can turn an add-on on for every claude.ai/code
 session through claude.ai's managed Claude Code settings, but that enables it for

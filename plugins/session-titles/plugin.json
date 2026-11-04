@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "session-titles",
+  "version": "2026.1103.1",
+  "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
+  "author": {
+    "name": "Actionfleet",
+    "url": "https://actionfleet.ai"
+  },
+  "homepage": "https://actionfleet.ai",
+  "repository": "https://github.com/actionfleetai/actionfleet-plugin",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "titles",
+    "ships"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Session Titles",
+        "shortDescription": "Title chats with where they run and their Ship",
+        "developerName": "Actionfleet",
+        "category": "Productivity",
+        "websiteURL": "https://actionfleet.ai",
+        "privacyPolicyURL": "https://actionfleet.ai/privacy",
+        "termsOfServiceURL": "https://actionfleet.ai/terms",
+        "defaultPrompt": [
+          "Title this chat for its Ship.",
+          "Show the session title rules."
+        ]
+      }
+    }
+  }
+}

@@ -16,6 +16,12 @@
       "source": "./packages/skill-cards",
       "description": "Opt-in Actionfleet skill: write and revise agent skills as short, testable cards.",
       "version": "2026.1103.1"
+    },
+    {
+      "name": "session-titles",
+      "source": "./packages/session-titles",
+      "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
+      "version": "2026.1103.1"
     }
   ]
 }

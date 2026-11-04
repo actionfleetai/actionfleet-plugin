@@ -20,6 +20,9 @@ What agents need that a crew member doesn't:
 - **Tests first.** Three prompts written before the card show whether the description fires.
 - **A small budget.** Hosts load every description at start and the body on use, so each line costs
   context in every session.
+- **Scripts for rules a program can decide.** A card read by a model can be applied differently each
+  time; a script gives the same answer every run, is run rather than read, and tests itself with
+  `--test`. The card keeps what needs judgment: which facts, from where, and what to do with the answer.
 
 ## Sources
 

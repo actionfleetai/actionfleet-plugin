@@ -2,6 +2,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -43,6 +44,24 @@ class AddonTests(unittest.TestCase):
         for name in build.ADDONS:
             for skill in sorted((ROOT / 'plugins' / name / 'skills').iterdir()):
                 self.assertEqual(check_card.check(skill), ([], []), skill.name)
+
+    def test_addon_scripts_pass_their_own_examples(self):
+        scripts = [ROOT / 'plugins' / name / path for name, files in build.ADDONS.items() for path in sorted(files)
+                   if path.endswith('.py') and "'--test'" in (ROOT / 'plugins' / name / path).read_text()]
+        self.assertTrue(scripts)
+        for script in scripts:
+            run = subprocess.run([sys.executable, '-I', str(script), '--test'], capture_output=True, text=True)
+            self.assertEqual(run.returncode, 0, f'{script.name}: {run.stdout}{run.stderr}')
+
+    def test_session_title_script_refuses_what_is_not_a_ship_ref(self):
+        script = ROOT / 'plugins/session-titles/skills/session-titles/scripts/title.py'
+        run = lambda *args: subprocess.run([sys.executable, '-I', str(script), *args], capture_output=True, text=True)
+        self.assertEqual(run('--harness', 'codex-cloud', '--ship', 'SHIP-12', '--title', '💻 SHIP-3 Fix login').stdout,
+                         '☁️ SHIP-12 Fix login\n')
+        for args in (['--harness', 'codex', '--ship', 'shp_abc123'], ['--ship', 'SHIP-12']):
+            refused = run(*args)
+            self.assertEqual((refused.returncode, refused.stdout), (2, ''), args)
+            self.assertIn('refused:', refused.stderr)
 
     def test_addon_source_rejects_unreviewed_files(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Compute this chat's Actionfleet title, `<place> <ref> <type>: <rest>`.
+"""Compute this chat's Actionfleet title, `<place> <emoji> <ref> <type>: <rest>`.
 
 Rules, first match wins in each:
   place  --harness ends in -cloud -> ☁️  | otherwise -> 💻
   ref    --convoy given -> convoy        | --ship given -> ship | otherwise -> none
-  rest   --title without leading 💻/☁️ and Ship refs | if empty -> the first words of --objective | otherwise -> none
+  emoji  --emoji given and a ref -> the emoji before the ref (its fleet's second name: 🚀 AFP-161) | otherwise -> none
+  rest   --title without leading 💻/☁️, fleet emoji and Ship refs | if empty -> the first words of --objective | otherwise -> none
   type   --type given -> `<type>: ` before rest, replacing an earlier `type(scope)!: ` | otherwise -> rest as it is
 
 Types are Conventional Commits types, by what the chat's main change does for the people who use it:
@@ -20,8 +21,8 @@ Types are Conventional Commits types, by what the chat's main change does for th
   chore     anything else, such as a release
   revert    undoes an earlier commit
 
-Refuses with exit 2, printing why, when --harness is empty, a ref isn't a Ship ref such as SHIP-7 or --type isn't
-one of these types: it never builds or guesses one. Pass --convoy only when this chat works several Ships under that parent.
+Refuses with exit 2, printing why, when --harness is empty, a ref isn't a Ship ref such as SHIP-7, --type isn't one of
+these types or --emoji isn't one emoji-like symbol: it never builds or guesses one. Pass --convoy only when this chat works several Ships under that parent.
 
 >>> title('claude-code-cloud', ship='SHIP-7', current='☁️ Opt-in skills for ActionFleet')
 '☁️ SHIP-7 Opt-in skills for ActionFleet'
@@ -39,6 +40,15 @@ one of these types: it never builds or guesses one. Pass --convoy only when this
 '💻 SHIP-9 fix: Ship list paging'
 >>> title('claude-code', ship='SHIP-9', current='💻 SHIP-9 feat: Ship list paging')
 '💻 SHIP-9 feat: Ship list paging'
+>>> title('claude-code', ship='AFP-161', emoji='🚀', current='💻 AFP-161 Login loop', type='fix')
+'💻 🚀 AFP-161 fix: Login loop'
+>>> title('codex-cloud', ship='AFP-161', emoji='🛸', current='☁️ 🚀 AFP-161 fix: Login loop')
+'☁️ 🛸 AFP-161 fix: Login loop'
+>>> title('claude-code', emoji='🚀', current='Notes')
+'💻 Notes'
+>>> title('claude-code', ship='AFP-1', emoji='AFP')
+Traceback (most recent call last):
+ValueError: not an emoji: 'AFP'
 >>> title('claude-code', ship='SHIP-9', type='feature')
 Traceback (most recent call last):
 ValueError: not a commit type: 'feature'
@@ -55,7 +65,8 @@ import sys
 
 CLOUD, LOCAL = '☁️', '💻'
 REF = re.compile(r'[A-Z][A-Z0-9]{0,9}-[1-9][0-9]*')
-PREFIX = re.compile(rf'^(?:\s*(?:{CLOUD}|☁|{LOCAL}|{REF.pattern})(?=\s|$|{CLOUD}|☁|{LOCAL}))+\s*')
+EMOJI = re.compile(r'[^\x00-\x7f\s]{1,16}')  # One emoji-like symbol: a fleet's second name for its key.
+PREFIX = re.compile(rf'^(?:\s*(?:{CLOUD}|☁|{LOCAL}|{REF.pattern}|{EMOJI.pattern}(?=\s+{REF.pattern}))(?=\s|$|{CLOUD}|☁|{LOCAL}))+\s*')
 OBJECTIVE_WORDS = 8
 TYPES = ('feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'build', 'ci', 'style', 'chore', 'revert')
 TYPED = re.compile(rf'^(?:{"|".join(TYPES)})(?:\([^()]*\))?!?:\s+')
@@ -67,11 +78,13 @@ def ship_ref(value):
     return value
 
 
-def title(harness, ship=None, convoy=None, current='', objective='', type=None):
+def title(harness, ship=None, convoy=None, current='', objective='', type=None, emoji=None):
     if not harness:
         raise ValueError('no harness: pass the harness this session gave bootstrap')
     if type is not None and type not in TYPES:
         raise ValueError(f'not a commit type: {type!r}')
+    if emoji is not None and not EMOJI.fullmatch(emoji):
+        raise ValueError(f'not an emoji: {emoji!r}')
     place = CLOUD if harness.endswith('-cloud') else LOCAL
     ref = ship_ref(convoy) or ship_ref(ship)
     rest = PREFIX.sub('', current or '').strip()
@@ -80,7 +93,7 @@ def title(harness, ship=None, convoy=None, current='', objective='', type=None):
     rest = rest or ' '.join((objective or '').split()[:OBJECTIVE_WORDS])
     if type and rest:
         rest = f'{type}: {rest}'
-    return ' '.join(part for part in (place, ref, rest) if part)
+    return ' '.join(part for part in (place, emoji if ref else None, ref, rest) if part)
 
 
 def main(argv):
@@ -91,6 +104,7 @@ def main(argv):
     parser.add_argument('--title', default='', help="this chat's current title")
     parser.add_argument('--objective', default='', help="the Ship's objective, used when the title is empty")
     parser.add_argument('--type', help="the commit type of this chat's main change, one of the types in --rules")
+    parser.add_argument('--emoji', help="the shown Ship's fleet emoji (head.ship.emoji), when its fleet has one")
     parser.add_argument('--rules', action='store_true', help='print the rules and exit')
     parser.add_argument('--test', action='store_true', help='run the examples and exit')
     args = parser.parse_args(argv)
@@ -103,7 +117,7 @@ def main(argv):
         print(f'{tried - failed}/{tried} examples pass')
         return 1 if failed else 0
     try:
-        print(title(args.harness, args.ship, args.convoy, args.title, args.objective, args.type))
+        print(title(args.harness, args.ship, args.convoy, args.title, args.objective, args.type, args.emoji))
     except ValueError as error:
         print(f'refused: {error}', file=sys.stderr)
         return 2

@@ -103,8 +103,8 @@ claude plugin marketplace add actionfleetai/actionfleet-plugin && claude plugin 
 Then, in a new session, open `/mcp`, choose `plugin:actionfleet-dev:actionfleet-dev`
 and **Authenticate** in the browser (in a session that was already open, run
 `/reload-plugins` first). `/actionfleet-dev:setup` reports the required checks on
-demand. Enable **auto-update** for the Actionfleet marketplace in `/plugin` →
-Marketplaces; third-party marketplaces default to auto-update off.
+demand. Turn on auto-update for the Actionfleet marketplace: third-party
+marketplaces default to off ([updates and auto-update](#updates-and-auto-update)).
 
 A repository prepared through the server's `get_guide("setup")` keeps its `.mcp.json`
 entry for the GitHub Copilot app and lists it in `disabledMcpjsonServers` in
@@ -168,7 +168,8 @@ copilot plugin marketplace add actionfleetai/actionfleet-plugin && copilot plugi
 ```
 
 In an open Claude Code session, run `/reload-plugins`; the skill is
-`/skill-cards:skill-cards`. If Claude says the marketplace's source doesn't match its
+`/skill-cards:skill-cards`. An add-on stays on the version you installed until the
+marketplace refreshes ([updates and auto-update](#updates-and-auto-update)). If Claude says the marketplace's source doesn't match its
 `extraKnownMarketplaces` entry, add it from the source that entry lists, or change the
 entry to `{"source": "github", "repo": "actionfleetai/actionfleet-plugin"}`. In Cursor,
 install **Skill Cards** from the imported team marketplace; an admin who sets it to
@@ -199,6 +200,39 @@ actionfleet-dev@actionfleet`, then `/reload-plugins` or a new session. Refreshin
 marketplace listing alone does not guarantee installed skills changed. Cursor's
 team Auto Refresh updates the indexed package; use its update/reload controls and
 confirm the installed version before claiming the session uses new skills.
+
+### Updates and auto-update
+
+Claude Code updates a plugin only after it refreshes its copy of the marketplace, and
+it leaves auto-update off for third-party marketplaces such as this one. Until then
+`/plugin` shows the version you installed, with **Update** greyed out, even after a
+newer release. To update now (replace `skill-cards` with the plugin):
+
+```sh
+claude plugin marketplace update actionfleet && claude plugin update skill-cards@actionfleet
+```
+
+Then run `/reload-plugins` or start a new session. To keep plugins current, turn on
+auto-update once in `/plugin` → **Marketplaces** → **actionfleet** → **Enable
+auto-update**, or declare it in settings: `~/.claude/settings.json` for you, or a
+repository's `.claude/settings.json` for everyone who opens that repository.
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "actionfleet": {
+      "source": { "source": "github", "repo": "actionfleetai/actionfleet-plugin" },
+      "autoUpdate": true
+    }
+  }
+}
+```
+
+Claude Code then refreshes the marketplace and the plugins installed from it at
+startup; an update applies after `/reload-plugins` or a restart. Declaring the
+marketplace installs nothing, so add-ons stay opt-in. Each plugin keeps the version
+of the release where it last changed, so an add-on can show an older version than the
+newest release; each release's notes list the plugins it changed.
 
 Do not recreate OAuth connections for ordinary deployments. A future custom
 domain migration must deliberately preserve/change the OAuth issuer, resource

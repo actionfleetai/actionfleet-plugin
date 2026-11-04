@@ -1,12 +1,12 @@
 ---
 name: session-titles
-description: Prefixes this chat's title with where it runs (💻 local, ☁️ cloud) and its Actionfleet Ship ref, using a script for the format. Use right after Actionfleet bootstrap, and right after this session crews or opens a Ship it will work. Not for renaming a Ship or another session.
+description: Prefixes this chat's title with where it runs (💻 local, ☁️ cloud), its Actionfleet Ship ref and its Conventional Commits type, using a script for the format. Use right after Actionfleet bootstrap, and right after this session crews or opens a Ship it will work. Not for renaming a Ship or another session.
 ---
 
 # Session titles
 
-Titles this chat `<place> <ref> <rest>`, for example `☁️ SHIP-7 Opt-in skills`. `scripts/title.py` owns the
-format; this card gathers its facts and applies its answer.
+Titles this chat `<place> <ref> <type>: <rest>`, for example `☁️ SHIP-7 feat: Opt-in skills`. `scripts/title.py`
+owns the format; this card gathers its facts and applies its answer.
 
 ## Facts
 
@@ -17,10 +17,11 @@ format; this card gathers its facts and applies its answer.
 | convoy | the parent's `head.ship.ref` (`get_ship` on `snapshot.parent_ship`), only when this chat works several Ships under it | leave `--convoy` out |
 | title | this chat's current title | leave `--title` out |
 | objective | the Ship's objective | leave `--objective` out |
+| type | the chat's main change, matched to a type in `title.py --rules`, once the work is known | leave `--type` out |
 
 ## Rules
 
-Place, ref and rest: `python3 <this skill's folder>/scripts/title.py --rules` prints them.
+Place, ref, rest and the types: `python3 <this skill's folder>/scripts/title.py --rules` prints them.
 
 | If the host is | Then the title tool is |
 | --- | --- |
@@ -32,7 +33,7 @@ Place, ref and rest: `python3 <this skill's folder>/scripts/title.py --rules` pr
 ## Procedure
 
 1. After `bootstrap`, and again after crewing or opening the Ship, run
-   `python3 <this skill's folder>/scripts/title.py --harness <harness> --ship <ref> --convoy <ref> --title "<title>" --objective "<objective>"`,
+   `python3 <this skill's folder>/scripts/title.py --harness <harness> --ship <ref> --convoy <ref> --title "<title>" --objective "<objective>" --type <type>`,
    leaving out each flag whose fact is unknown.
 2. Set this chat's title to the script's output with the title tool. Rename only this chat.
 
@@ -42,7 +43,7 @@ Reporting, releasing or a STOP doesn't change the title.
 
 | Symptom | Action | Tell |
 | --- | --- | --- |
-| the script exits 2 (no harness, or not a Ship ref) | don't retitle | nobody |
+| the script exits 2 (no harness, not a Ship ref, or not a type) | don't retitle | nobody |
 | `python3` is missing | read `scripts/title.py` and apply its rules by hand | nobody |
 | the title tool refuses or errors | don't retry | nobody |
 
@@ -53,7 +54,8 @@ Reporting, releasing or a STOP doesn't change the title.
 
 ## Tests
 
-- Fires: a cloud session crews SHIP-7 → `☁️ SHIP-7 <rest>`.
+- Fires: a cloud session crews SHIP-7 to fix a bug → `☁️ SHIP-7 fix: <rest>`.
 - Doesn't fire: "rename SHIP-7" (the Ship's title, not the chat's).
-- False branch: Claude Code CLI, no title tool → title unchanged, no message.
+- False branch: the work isn't known yet → no type (`☁️ SHIP-7 <rest>`); Claude Code CLI, no title tool → title
+  unchanged, no message.
 - Rules: `python3 <this skill's folder>/scripts/title.py --test` runs the script's examples.

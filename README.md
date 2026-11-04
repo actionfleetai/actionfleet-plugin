@@ -192,12 +192,9 @@ everyone, so it is no longer opt-in.
 | Bundled skills/manifests | Versioned Git marketplace/plugin update | Installed plugin version and `skills/setup/references/installation.json` |
 | Account access | Browser OAuth consent and normal token refresh | Required bootstrap checks and server-bound worker/scope |
 
-For Codex, refresh the repo snapshot with `codex plugin marketplace upgrade
-actionfleet` and apply the plugin update in the supported app UI; hosted imports
-use their workspace sync controls. Claude's connector has no plugin to update; where
-Claude Code uses the plugin instead, run `claude plugin update
-actionfleet-dev@actionfleet`, then `/reload-plugins` or a new session. Refreshing a
-marketplace listing alone does not guarantee installed skills changed. Cursor's
+Claude Code and Codex: see [updates and auto-update](#updates-and-auto-update).
+Hosted Codex imports use their workspace sync controls. Claude's connector has no
+plugin to update. Cursor's
 team Auto Refresh updates the indexed package; use its update/reload controls and
 confirm the installed version before claiming the session uses new skills.
 
@@ -229,10 +226,29 @@ repository's `.claude/settings.json` for everyone who opens that repository.
 ```
 
 Claude Code then refreshes the marketplace and the plugins installed from it at
-startup; an update applies after `/reload-plugins` or a restart. Declaring the
-marketplace installs nothing, so add-ons stay opt-in. Each plugin keeps the version
-of the release where it last changed, so an add-on can show an older version than the
-newest release; each release's notes list the plugins it changed.
+startup; an update applies after `/reload-plugins` or a restart.
+
+Codex refreshes every configured Git marketplace in the background when it starts and
+reinstalls the plugins installed from it; there is no setting to turn on (checked in
+Codex CLI 0.166). Start a new session to be sure it loaded an update. To update now:
+
+```sh
+codex plugin marketplace upgrade actionfleet
+```
+
+`codex plugin marketplace add` declares the marketplace in `~/.codex/config.toml`. A
+repository's `.codex/config.toml` declares it for everyone who opens that repository,
+once they trust the project (Codex skips an untrusted project's `.codex/`):
+
+```toml
+[marketplaces.actionfleet]
+source_type = "git"
+source = "https://github.com/actionfleetai/actionfleet-plugin.git"
+```
+
+Declaring the marketplace installs nothing in either host, so add-ons stay opt-in. Each
+plugin keeps the version of the release where it last changed, so an add-on can show an
+older version than the newest release; each release's notes list the plugins it changed.
 
 Do not recreate OAuth connections for ordinary deployments. A future custom
 domain migration must deliberately preserve/change the OAuth issuer, resource

@@ -21,7 +21,7 @@
       "name": "session-titles",
       "source": "./packages/session-titles",
       "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
-      "version": "2026.1103.2"
+      "version": "2026.1103.3"
     },
     {
       "name": "commit-messages",

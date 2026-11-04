@@ -1,6 +1,6 @@
 {
   "name": "session-titles",
-  "version": "2026.1103.2",
+  "version": "2026.1103.3",
   "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
   "author": {
     "name": "Actionfleet",

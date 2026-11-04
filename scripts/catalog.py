@@ -8,7 +8,7 @@ import re
 import tempfile
 import zipfile
 
-from build import ROOT, build, endpoint
+from build import ADDONS, ROOT, addon, build, endpoint
 from release_version import read_release
 
 CATALOGS = ('.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json',
@@ -63,16 +63,29 @@ def generated(rows=None):
         entries.append({'name': p['name'], 'source': './packages/' + p['name'],
                         'description': 'Actionfleet task coordination: ' + p['display_name'],
                         'version': meta['plugin_version']})
+    # Add-ons hold skills only and no environment's connection, so each is always listed and installed only on request.
+    addons = []
+    for name in ADDONS:
+        package = addon(name)
+        manifest = json.loads(package['.claude-plugin/plugin.json'])
+        if manifest['version'] != release['version']:
+            raise ValueError(f'Add-on {name} differs from the release date/build; run release_version.py bump.')
+        files.update({f'packages/{name}/{path}': data for path, data in package.items()})
+        addons.append({'name': name, 'source': './packages/' + name, 'description': manifest['description'],
+                       'version': manifest['version']})
     files[CATALOGS[0]] = encoded({
         'name': 'actionfleet', 'interface': {'displayName': 'Actionfleet Plugins'},
         'plugins': [{'name': e['name'], 'source': {'source': 'local', 'path': e['source']},
                      'policy': {'installation': 'AVAILABLE' if p['installable'] else 'NOT_AVAILABLE',
                                 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}
-                    for p, e in zip(rows, entries)],
+                    for p, e in zip(rows, entries)]
+                   + [{'name': e['name'], 'source': {'source': 'local', 'path': e['source']},
+                       'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_USE'}, 'category': 'Productivity'}
+                      for e in addons],
     })
-    active = [e for p, e in zip(rows, entries) if p['installable']]
+    active = [e for p, e in zip(rows, entries) if p['installable']] + addons
     common = {'name': 'actionfleet', 'owner': {'name': 'Actionfleet'},
-              'description': 'Actionfleet harness setup and durable task coordination.', 'plugins': active}
+              'description': 'Actionfleet harness setup, durable task coordination and opt-in skills.', 'plugins': active}
     files[CATALOGS[1]] = encoded(common)
     files[CATALOGS[2]] = encoded(common)
     return files
@@ -105,16 +118,14 @@ def archives(output):
     files = sync(check=True)
     output.mkdir(parents=True, exist_ok=False)
     sums = []
-    for p in profiles():
-        if not p['installable']:
-            continue
-        prefix = f"packages/{p['name']}/"
+    for package in [p['name'] for p in profiles() if p['installable']] + list(ADDONS):
+        prefix = f"packages/{package}/"
         version = json.loads(files[prefix + '.codex-plugin/plugin.json'])['version']
-        path = output / f"{p['name']}-{version}.zip"
+        path = output / f"{package}-{version}.zip"
         with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as z:
             for name, data in sorted(files.items()):
                 if name.startswith(prefix):
-                    info = zipfile.ZipInfo(p['name'] + '/' + name[len(prefix):], date_time=(1980, 1, 1, 0, 0, 0))
+                    info = zipfile.ZipInfo(package + '/' + name[len(prefix):], date_time=(1980, 1, 1, 0, 0, 0))
                     info.compress_type = zipfile.ZIP_DEFLATED
                     info.external_attr = 0o100644 << 16
                     z.writestr(info, data)

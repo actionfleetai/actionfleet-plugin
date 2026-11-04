@@ -37,9 +37,11 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(files[root + 'assets/icon.png'], (ROOT / 'icons' / (p['name'] + '.png')).read_bytes())
         self.assertNotEqual(files['packages/actionfleet-dev/assets/icon.png'], files['packages/actionfleet/assets/icon.png'])
         openai = json.loads(files[catalog.CATALOGS[0]])['plugins']
-        self.assertEqual([p['policy']['installation'] for p in openai], ['AVAILABLE', 'NOT_AVAILABLE'])
+        addons = list(catalog.ADDONS)
+        self.assertEqual([p['name'] for p in openai], ['actionfleet-dev', 'actionfleet', *addons])
+        self.assertEqual([p['policy']['installation'] for p in openai], ['AVAILABLE', 'NOT_AVAILABLE', *['AVAILABLE'] * len(addons)])
         for path in catalog.CATALOGS[1:]:
-            self.assertEqual([p['name'] for p in json.loads(files[path])['plugins']], ['actionfleet-dev'])
+            self.assertEqual([p['name'] for p in json.loads(files[path])['plugins']], ['actionfleet-dev', *addons])
 
     def test_checked_in_files_match_source_and_reject_drift(self):
         catalog.sync(check=True)
@@ -87,5 +89,7 @@ class CatalogTests(unittest.TestCase):
             catalog.archives(a)
             catalog.archives(b)
             self.assertEqual((a / 'SHA256SUMS').read_bytes(), (b / 'SHA256SUMS').read_bytes())
-            self.assertEqual(len(list(a.glob('*.zip'))), 1)
-            self.assertEqual(list(a.glob('*.zip'))[0].read_bytes(), list(b.glob('*.zip'))[0].read_bytes())
+            zips = sorted(a.glob('*.zip'))
+            self.assertEqual([z.name.rsplit('-', 1)[0] for z in zips], sorted(['actionfleet-dev', *catalog.ADDONS]))
+            for z in zips:
+                self.assertEqual(z.read_bytes(), (b / z.name).read_bytes())

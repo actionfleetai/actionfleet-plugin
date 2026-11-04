@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate complete Codex/Claude/Cursor packages from one public source."""
+"""Generate complete Codex/Claude/Cursor packages: the core plugin from one public source, and skills-only add-ons."""
 import argparse
 import json
 from pathlib import Path
@@ -12,6 +12,14 @@ SOURCE = ROOT / 'plugins/actionfleet'
 FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md',
          'skills/coordinate/SKILL.md', 'skills/work-task/references/tool-guide.md'}
 ICON = 'assets/icon.png'  # Each profile's render of icons/ship.svg (scripts/icons.py).
+# Opt-in add-ons: one plugin per skill, so each host's install is the opt-in, with each add-on's reviewed files. They
+# carry no MCP server, so they are safe beside a claude.ai connector or the core plugin and never another crew device.
+ADDONS = {
+    'skill-cards': {'plugin.json', 'skills/skill-cards/SKILL.md', 'skills/skill-cards/assets/card.md',
+                    'skills/skill-cards/references/example-session-titles.md',
+                    'skills/skill-cards/references/sources.md', 'skills/skill-cards/scripts/check_card.py'},
+}
+ADDON_ICON = ROOT / 'icons/actionfleet.png'  # Add-ons don't depend on an environment, so they use the brand's icon.
 
 
 def endpoint(value):
@@ -23,16 +31,54 @@ def endpoint(value):
     return value.rstrip('/')
 
 
+def encoded(value):
+    return (json.dumps(value, indent=2) + '\n').encode()
+
+
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_bytes(encoded(value))
+
+
+def reviewed(source, files):
+    actual = {p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()}
+    if actual != files or any(p.is_symlink() for p in source.rglob('*')):
+        raise ValueError('Plugin source must contain only the reviewed public manifest and skills, with no symlinks.')
+
+
+def manifests(manifest, mcp):
+    """Each host's native manifest. mcp links Codex to the package's server; onboarding is named only where set."""
+    common = {k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')}
+    openai = manifest['extensions']['com.openai']
+    codex = {**common, 'skills': './skills/', **({'mcpServers': './.mcp.json'} if mcp else {}),
+             'interface': {**openai['interface'], 'composerIcon': './' + ICON, 'logo': './' + ICON}}
+    if 'onboardingSkill' in openai:
+        codex['extensions'] = {'com.openai': {'onboardingSkill': openai['onboardingSkill']}}
+    # Claude Code ignores icon; Anthropic's directory reads it for the listing.
+    return {'.codex-plugin/plugin.json': codex, '.claude-plugin/plugin.json': {**common, 'icon': './' + ICON},
+            '.cursor-plugin/plugin.json': {**common, 'displayName': openai['interface']['displayName'], 'logo': ICON}}
+
+
+def addon(name, source=None):
+    """A skills-only add-on package as {path: bytes}: its reviewed skills, license, icon and native manifests."""
+    if name not in ADDONS:
+        raise ValueError('Unknown add-on.')
+    source = Path(source) if source else ROOT / 'plugins' / name
+    reviewed(source, ADDONS[name])
+    manifest = json.loads((source / 'plugin.json').read_text())
+    if manifest['name'] != name:
+        raise ValueError('An add-on manifest must carry its own name.')
+    files = {p.relative_to(source).as_posix(): p.read_bytes() for p in sorted(source.rglob('*'))
+             if p.is_file() and p.relative_to(source).as_posix() != 'plugin.json'}
+    files['LICENSE'] = (ROOT / 'LICENSE').read_bytes()
+    files[ICON] = ADDON_ICON.read_bytes()
+    files.update({path: encoded(value) for path, value in manifests(manifest, mcp=False).items()})
+    return files
 
 
 def build(url, output, source=SOURCE, *, name=None, display_name=None, icon=None):
     url = endpoint(url)
-    actual = {p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file()}
-    if actual != FILES or any(p.is_symlink() for p in source.rglob('*')):
-        raise ValueError('Plugin source must contain only the reviewed public manifest and skills, with no symlinks.')
+    reviewed(source, FILES)
     output = Path(output)
     if output.exists():
         raise ValueError('Choose a new output directory; existing files are never replaced.')
@@ -62,16 +108,8 @@ def build(url, output, source=SOURCE, *, name=None, display_name=None, icon=None
         },
     })
     write(plugin / '.mcp.json', {'mcpServers': {name: {'type': 'http', 'url': url}}})
-    common = {k: manifest[k] for k in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords')}
-    openai = manifest['extensions']['com.openai']
-    write(plugin / '.codex-plugin/plugin.json', {
-        **common, 'skills': './skills/', 'mcpServers': './.mcp.json',
-        'interface': {**openai['interface'], 'composerIcon': './' + ICON, 'logo': './' + ICON},
-        'extensions': {'com.openai': {'onboardingSkill': openai['onboardingSkill']}},
-    })
-    # Claude Code ignores icon; Anthropic's directory reads it for the listing.
-    write(plugin / '.claude-plugin/plugin.json', {**common, 'icon': './' + ICON})
-    write(plugin / '.cursor-plugin/plugin.json', {**common, 'displayName': openai['interface']['displayName'], 'logo': ICON})
+    for path, value in manifests(manifest, mcp=True).items():
+        write(plugin / path, value)
     write(output / '.agents/plugins/marketplace.json', {
         'name': 'actionfleet', 'interface': {'displayName': 'Actionfleet Plugins'},
         'plugins': [{'name': name, 'source': {'source': 'local', 'path': './plugins/actionfleet'},

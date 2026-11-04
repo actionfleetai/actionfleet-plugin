@@ -13,7 +13,10 @@ policy separate; never re-author as a provider bot to satisfy a Stop hook or obt
 a Verified badge, and do not rewrite published history. Installed skills must
 follow each user's own repository identity policy, not hardcode Bourke's identity.
 
-The skill source is `plugins/actionfleet/`; edit it, not generated `packages/`.
+The skill sources are `plugins/actionfleet/` (the core plugin) and `plugins/<add-on>/`
+(opt-in add-ons: skills only, never an MCP server, files listed in `ADDONS` in
+`scripts/build.py`; write their skills with the `skill-cards` card format). Edit
+them, not generated `packages/`.
 `profiles.json` owns stable dev/prod connection identities and availability. Do
 not enable production just because a service URL exists. Public resources must
 never contain credentials, private task/account IDs or infrastructure secrets.

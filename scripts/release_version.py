@@ -39,11 +39,12 @@ def next_release(value, now=None):
 def bump():
     path = ROOT / 'release.json'
     value = next_release(json.loads(path.read_text()))
-    manifest_path = ROOT / 'plugins/actionfleet/plugin.json'
-    manifest = json.loads(manifest_path.read_text())
-    manifest['version'] = identity(value)['version']
     path.write_text(json.dumps(value, indent=2) + '\n')
-    manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
+    # The core plugin and every add-on share the release's date/build.
+    for manifest_path in sorted((ROOT / 'plugins').glob('*/plugin.json')):
+        manifest = json.loads(manifest_path.read_text())
+        manifest['version'] = identity(value)['version']
+        manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
     from catalog import sync
     sync()
     return identity(value)

@@ -3,13 +3,19 @@
   "owner": {
     "name": "Actionfleet"
   },
-  "description": "Actionfleet harness setup and durable task coordination.",
+  "description": "Actionfleet harness setup, durable task coordination and opt-in skills.",
   "plugins": [
     {
       "name": "actionfleet-dev",
       "source": "./packages/actionfleet-dev",
       "description": "Actionfleet task coordination: Actionfleet Dev",
-      "version": "2026.1030.1"
+      "version": "2026.1103.1"
+    },
+    {
+      "name": "skill-cards",
+      "source": "./packages/skill-cards",
+      "description": "Opt-in Actionfleet skill: write and revise agent skills as short, testable cards.",
+      "version": "2026.1103.1"
     }
   ]
 }

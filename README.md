@@ -4,7 +4,8 @@ Install **Actionfleet Dev** to connect Codex or Cursor to the same durable
 coordination service; Claude connects through one claude.ai connector instead
 ([Claude Code](#claude-code)). Work runs in your harness. Fleet records Ships,
 claims, progress and independent delivery outputs; installation does not launch
-a stopped chat or pool subscription allowances.
+a stopped chat or pool subscription allowances. The same marketplace offers
+[opt-in skills](#opt-in-skills): add-ons that hold skills only, for Claude too.
 
 **The MCP is the integration; this plugin is optional.** Any host that takes MCP
 servers gets everything from the MCP alone: its instructions, tool descriptions,
@@ -137,6 +138,33 @@ The package includes the portable `mcp.json` and native
 `.cursor-plugin/plugin.json`; every host uses the same skills. No CLI-only install step
 is presented as proof that a Cursor cloud agent is connected.
 
+## Opt-in skills
+
+Add-ons are separate plugins in this marketplace that hold skills only. They carry no
+MCP server, so they are safe beside the claude.ai connector or the Actionfleet plugin
+and never become another crew device. Nothing installs one for you: installing it is
+the opt-in, and uninstalling it opts out.
+
+| Add-on | What it does |
+| --- | --- |
+| `skill-cards` | Writes and revises agent skills as short, testable cards (trigger, facts with sources, rules, steps, faults, exits) and checks them with its `check_card.py`. |
+
+```sh
+claude plugin marketplace add actionfleetai/actionfleet-plugin && claude plugin install skill-cards@actionfleet
+```
+
+```sh
+codex plugin marketplace add actionfleetai/actionfleet-plugin && codex plugin add skill-cards@actionfleet
+```
+
+In an open Claude Code session, run `/reload-plugins`; the skill is
+`/skill-cards:skill-cards`. In Cursor, install **Skill Cards** from the imported team
+marketplace; an admin who sets it to **Default Off** leaves each member to opt in.
+A plugin installed on one computer doesn't reach claude.ai/code cloud sessions or
+Codex cloud tasks. An organization can turn an add-on on for every claude.ai/code
+session through claude.ai's managed Claude Code settings, but that enables it for
+everyone, so it is no longer opt-in.
+
 ## What updates, and when
 
 | Layer | Update path | Check |
@@ -180,7 +208,9 @@ retain the labels recorded when those events happened.
 
 ## Build, verify and release
 
-`plugins/actionfleet/` is the only skill source. `profiles.json` declares the
+`plugins/actionfleet/` is the core plugin's skill source; each add-on's is
+`plugins/<add-on>/`, with its reviewed files listed in `ADDONS` in `scripts/build.py`.
+Add-ons carry the same release version as the core plugin. `profiles.json` declares the
 environment endpoints and availability. Generate the tracked `packages/` and
 three root marketplace catalogs after edits:
 
@@ -202,7 +232,8 @@ Anthropic's directory listing; Claude Code ignores it).
 
 `python3 scripts/check_codex_package.py` asks a real Codex (`codex app-server`,
 throwaway `CODEX_HOME`, no sign-in) what it loads from each package and fails
-unless its one MCP server, the three skills, the onboarding skill and its icon appear; CI runs
+unless its one MCP server, the three skills, the onboarding skill and its icon appear, and
+unless each add-on loads its skills and icon with no MCP server; CI runs
 it with a pinned Codex. Never hand-edit generated packages. Before a package release, run
 `python3 scripts/release_version.py bump` after fetching/rebasing main. It updates
 `release.json`, the canonical manifest and generated packages together. Releases

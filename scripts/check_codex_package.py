@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Ask a real Codex what it loads from each package: its one MCP server, skills, the onboarding skill and its icon.
+"""Ask a real Codex what it loads from each package: its one MCP server, skills, the onboarding skill and its icon,
+and from each add-on: its skills and icon, and no MCP server.
 Installs into a throwaway CODEX_HOME only; never signs in or connects to a server."""
 import argparse
 import json
@@ -13,6 +14,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
+from build import ADDONS  # noqa: E402
 from catalog import profiles  # noqa: E402
 
 
@@ -60,11 +62,25 @@ def problems(name, plugin, installed=True):
     for skill in ('setup', 'work-task', 'coordinate'):
         if f'{name}:{skill}' not in skills:
             found.append(f'{name}: Codex does not load skill {skill}')
+    return found + icon_problems(name, plugin)
+
+
+def addon_problems(name, plugin):
+    """An add-on loads its skills and no MCP server: a server would be another crew device."""
+    found = []
+    if plugin.get('mcpServers'):
+        found.append(f'{name}: Codex loads MCP servers {sorted(plugin["mcpServers"])} from a skills-only add-on')
+    skills = {s['name'] for s in plugin.get('skills') or []}
+    for skill in sorted({path.split('/')[1] for path in ADDONS[name] if path.startswith('skills/')}):
+        if f'{name}:{skill}' not in skills:
+            found.append(f'{name}: Codex does not load skill {skill}')
+    return found + icon_problems(name, plugin)
+
+
+def icon_problems(name, plugin):
     interface = (plugin.get('summary') or {}).get('interface') or {}
-    for key in ('logo', 'composerIcon'):
-        if not str(interface.get(key) or '').endswith(f'/packages/{name}/assets/icon.png'):
-            found.append(f'{name}: Codex resolves no {key} to the package icon')
-    return found
+    return [f'{name}: Codex resolves no {key} to the package icon' for key in ('logo', 'composerIcon')
+            if not str(interface.get(key) or '').endswith(f'/packages/{name}/assets/icon.png')]
 
 
 if __name__ == '__main__':
@@ -73,9 +89,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     names = [p['name'] for p in profiles()]
     installable = [p['name'] for p in profiles() if p['installable']]
-    plugins = read_plugins(names, args.codex, install=installable)
+    plugins = read_plugins(names + list(ADDONS), args.codex, install=installable + list(ADDONS))
     found = [line for name in names for line in problems(name, plugins[name], name in installable)]
-    for name in names:
+    found += [line for name in ADDONS for line in addon_problems(name, plugins[name])]
+    for name in names + list(ADDONS):
         print(f"{name}: MCP {sorted(plugins[name].get('mcpServers') or [])}, "
               f"onboarding {(plugins[name].get('onboardingSkill') or {}).get('name')}")
     if found:

@@ -6,8 +6,8 @@ description: Writes and revises agent skills (SKILL.md) as short, testable cards
 # Skill cards
 
 A card tells a capable agent who runs it, when, with what, how, and how it ends. Write only what the
-agent can't already know or infer. Blank card: `assets/card.md`. Worked example: the `session-titles`
-add-on in the same marketplace, a card that runs a script.
+agent can't already know or infer. Blank card: `assets/card.md`. Worked examples: the `session-titles`
+and `commit-messages` add-ons in the same marketplace, cards that run a script.
 
 ## Facts
 
@@ -29,6 +29,7 @@ First match wins in each table.
 | If a step is | Then write |
 | --- | --- |
 | a rule over facts the agent already holds (format, parse, validate, compute) | a stdlib Python script in `scripts/`: facts as flags, the answer on stdout, exit 2 with why when it refuses, and `--rules` and `--test` (its examples). The card names the facts, runs it and applies the answer |
+| writing a title, commit subject, pull request title or release note | Conventional Commits, `type(scope)!: summary`, with the type from the spec's list and checked by the script |
 | fragile or exact (a command, a format, an API) | the exact command or format |
 | Otherwise | the intent and its limit, not a script |
 
@@ -79,7 +80,8 @@ First match wins in each table.
 
 ## Tests
 
-- Fires: "make a skill that titles my chats with the Ship id" → a card whose title format is a script.
+- Fires: "make a skill that titles my chats with the Ship id" → a card whose title format, with a commit type, is
+  a script.
 - Doesn't fire: "what skills do I have installed?"
 - False branch: the trigger is "after crew_ship returns" → the card, plus advice to put the
   instruction in that tool's result.

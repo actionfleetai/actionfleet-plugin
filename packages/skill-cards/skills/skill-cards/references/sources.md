@@ -23,6 +23,8 @@ What agents need that a crew member doesn't:
 - **Scripts for rules a program can decide.** A card read by a model can be applied differently each
   time; a script gives the same answer every run, is run rather than read, and tests itself with
   `--test`. The card keeps what needs judgment: which facts, from where, and what to do with the answer.
+- **One grammar for every title.** Commit subjects, pull request and chat titles and release notes use
+  Conventional Commits, so people and tools read the kind of change the same way everywhere.
 
 ## Sources
 
@@ -34,5 +36,7 @@ What agents need that a crew member doesn't:
   https://www.navsea.navy.mil/Portals/103/Documents/NAVINST/04790.008D.pdf
 - Engineering Operational Sequencing System overview:
   https://engineeringtraining.tpub.com/14079/css/Engineering-Operational-Sequencing-System-Eoss-105.htm
+- Conventional Commits 1.0.0: https://www.conventionalcommits.org/en/v1.0.0/ (types, scope, `!` and the
+  `BREAKING CHANGE:` footer; footers follow Git's trailer format).
 - WARNING, CAUTION and NOTE order and placement, MIL-STD-38784:
   https://technicalmanualspecsstandards.emilspec.com/MIL-STD-38784/page31.html

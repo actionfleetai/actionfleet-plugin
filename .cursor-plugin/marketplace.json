@@ -12,22 +12,10 @@
       "version": "2026.1103.1"
     },
     {
-      "name": "skill-cards",
-      "source": "./packages/skill-cards",
-      "description": "Opt-in Actionfleet skill: write and tighten agent skills that are short and run the same way every time.",
-      "version": "2026.1103.2"
-    },
-    {
-      "name": "session-titles",
-      "source": "./packages/session-titles",
-      "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
+      "name": "extras",
+      "source": "./packages/extras",
+      "description": "Opt-in Actionfleet skills: write and tighten agent skills, title chats with their Ship, write Conventional Commits.",
       "version": "2026.1103.3"
-    },
-    {
-      "name": "commit-messages",
-      "source": "./packages/commit-messages",
-      "description": "Opt-in Actionfleet skill: write and check commit messages as Conventional Commits.",
-      "version": "2026.1103.2"
     }
   ]
 }

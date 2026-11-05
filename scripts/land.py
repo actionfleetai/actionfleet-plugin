@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-COMMIT = ROOT / 'plugins/commit-messages/skills/commit-messages/scripts/commit.py'
+COMMIT = ROOT / 'plugins/extras/skills/commit-messages/scripts/commit.py'
 RELEASED = ['release.json', 'plugins', 'packages', '.agents/plugins', '.claude-plugin', '.cursor-plugin']
 PASSES = 3
 

@@ -14,7 +14,7 @@ import catalog
 from release_version import order, plugin_version, read_release
 
 sys.dont_write_bytecode = True  # Loading the add-on's script must not leave __pycache__ in its reviewed source.
-spec = importlib.util.spec_from_file_location('check_card', ROOT / 'plugins/skill-cards/skills/skill-cards/scripts/check_card.py')
+spec = importlib.util.spec_from_file_location('check_card', ROOT / 'plugins/extras/skills/skill-cards/scripts/check_card.py')
 check_card = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check_card)
 
@@ -26,8 +26,8 @@ def script(path):
     return module
 
 
-commit = script('plugins/commit-messages/skills/commit-messages/scripts/commit.py')
-title = script('plugins/session-titles/skills/session-titles/scripts/title.py')
+commit = script('plugins/extras/skills/commit-messages/scripts/commit.py')
+title = script('plugins/extras/skills/session-titles/scripts/title.py')
 
 
 class AddonTests(unittest.TestCase):
@@ -67,7 +67,7 @@ class AddonTests(unittest.TestCase):
             self.assertEqual(run.returncode, 0, f'{script.name}: {run.stdout}{run.stderr}')
 
     def test_session_title_script_refuses_what_is_not_a_ship_ref(self):
-        script = ROOT / 'plugins/session-titles/skills/session-titles/scripts/title.py'
+        script = ROOT / 'plugins/extras/skills/session-titles/scripts/title.py'
         run = lambda *args: subprocess.run([sys.executable, '-I', str(script), *args], capture_output=True, text=True)
         self.assertEqual(run('--harness', 'codex-cloud', '--ship', 'SHIP-12', '--title', '💻 SHIP-3 Fix login').stdout,
                          '☁️ SHIP-12 Fix login\n')
@@ -83,7 +83,7 @@ class AddonTests(unittest.TestCase):
         self.assertEqual(len(types(commit)), len(commit.TYPES))
 
     def test_commit_check_refuses_a_bad_message_file_and_passes_a_good_one(self):
-        script = ROOT / 'plugins/commit-messages/skills/commit-messages/scripts/commit.py'
+        script = ROOT / 'plugins/extras/skills/commit-messages/scripts/commit.py'
         with tempfile.TemporaryDirectory() as tmp:
             message = Path(tmp) / 'COMMIT_EDITMSG'
             for text, code in (('feat(catalog): list add-on versions\n\n# Please enter the commit message\n', 0),
@@ -95,12 +95,12 @@ class AddonTests(unittest.TestCase):
 
     def test_addon_source_rejects_unreviewed_files(self):
         with tempfile.TemporaryDirectory() as tmp:
-            source = Path(tmp) / 'skill-cards'
-            shutil.copytree(ROOT / 'plugins/skill-cards', source)
-            build.addon('skill-cards', source)
+            source = Path(tmp) / 'extras'
+            shutil.copytree(ROOT / 'plugins/extras', source)
+            build.addon('extras', source)
             (source / 'skills/skill-cards/.env').write_text('not a real secret')
             with self.assertRaises(ValueError):
-                build.addon('skill-cards', source)
+                build.addon('extras', source)
         with self.assertRaises(ValueError):
             build.addon('not-an-addon')
 

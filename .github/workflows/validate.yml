@@ -30,7 +30,7 @@ jobs:
         run: |
           range="HEAD~1..HEAD"
           if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then range="$BEFORE..HEAD"; fi
-          python plugins/commit-messages/skills/commit-messages/scripts/commit.py check --public --range "$range" \
+          python plugins/extras/skills/commit-messages/scripts/commit.py check --public --range "$range" \
             || echo "::warning title=Commit messages::Some subjects in $range aren't Conventional Commits; see this step's log"
       - uses: actions/setup-node@v4
         with:

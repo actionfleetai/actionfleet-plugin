@@ -15,10 +15,11 @@ ICON = 'assets/icon.png'  # Each profile's render of icons/ship.svg (scripts/ico
 # Opt-in add-ons: one plugin per skill, so each host's install is the opt-in, with each add-on's reviewed files. They
 # carry no MCP server, so they are safe beside a claude.ai connector or the core plugin and never another crew device.
 ADDONS = {
-    'skill-cards': {'plugin.json', 'skills/skill-cards/SKILL.md',
-                    'skills/skill-cards/references/sources.md', 'skills/skill-cards/scripts/check_card.py'},
-    'session-titles': {'plugin.json', 'skills/session-titles/SKILL.md', 'skills/session-titles/scripts/title.py'},
-    'commit-messages': {'plugin.json', 'skills/commit-messages/SKILL.md', 'skills/commit-messages/scripts/commit.py'},
+    'extras': {'plugin.json',
+               'skills/skill-cards/SKILL.md', 'skills/skill-cards/references/sources.md',
+               'skills/skill-cards/scripts/check_card.py',
+               'skills/session-titles/SKILL.md', 'skills/session-titles/scripts/title.py',
+               'skills/commit-messages/SKILL.md', 'skills/commit-messages/scripts/commit.py'},
 }
 ADDON_ICON = ROOT / 'icons/actionfleet.png'  # Add-ons don't depend on an environment, so they use the brand's icon.
 

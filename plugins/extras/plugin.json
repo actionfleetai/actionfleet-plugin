@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "session-titles",
+  "name": "extras",
   "version": "2026.1103.3",
-  "description": "Opt-in Actionfleet skill: prefix each chat's title with where it runs and its Ship ref.",
+  "description": "Opt-in Actionfleet skills: write and tighten agent skills, title chats with their Ship, write Conventional Commits.",
   "author": {
     "name": "Actionfleet",
     "url": "https://actionfleet.ai"
@@ -12,22 +12,24 @@
   "license": "MIT",
   "keywords": [
     "skills",
-    "titles",
-    "ships"
+    "commits",
+    "conventional-commits",
+    "titles"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Session Titles",
-        "shortDescription": "Title chats with where they run and their Ship",
+        "displayName": "Actionfleet Extras",
+        "shortDescription": "Opt-in skills: skill writing, chat titles, commits",
         "developerName": "Actionfleet",
         "category": "Productivity",
         "websiteURL": "https://actionfleet.ai",
         "privacyPolicyURL": "https://actionfleet.ai/privacy",
         "termsOfServiceURL": "https://actionfleet.ai/terms",
         "defaultPrompt": [
-          "Title this chat for its Ship.",
-          "Show the session title rules."
+          "Tighten this skill.",
+          "Write the commit message for these changes.",
+          "Title this chat with its Ship."
         ]
       }
     }

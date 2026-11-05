@@ -5,7 +5,7 @@ coordination service; Claude connects through one claude.ai connector instead
 ([Claude Code](#claude-code)). Work runs in your harness. Fleet records Ships,
 claims, progress and independent delivery outputs; installation does not launch
 a stopped chat or pool subscription allowances. The same marketplace offers
-[opt-in skills](#opt-in-skills): add-ons that hold skills only, for Claude too.
+[opt-in skills](#opt-in-skills): `extras`, a plugin that holds skills only, for Claude too.
 
 **The MCP is the integration; this plugin is optional.** Any host that takes MCP
 servers gets everything from the MCP alone: its instructions, tool descriptions,
@@ -140,47 +140,59 @@ is presented as proof that a Cursor cloud agent is connected.
 
 ## Opt-in skills
 
-Add-ons are separate plugins in this marketplace that hold skills only. They carry no
-MCP server, so they are safe beside the claude.ai connector or the Actionfleet plugin
-and never become another crew device. Nothing installs one for you: installing it is
-the opt-in, and uninstalling it opts out.
+`extras` is one plugin in this marketplace that holds skills only. It carries no MCP
+server, so it is safe beside the claude.ai connector or the Actionfleet plugin and
+never becomes another crew device. Nothing installs it for you: installing it is the
+opt-in, and uninstalling it opts out. Only each skill's description loads at the start
+of a session; a skill's body loads when it is used, and its script runs without being
+read into context.
 
-| Add-on | What it does |
+| Skill | What it does |
 | --- | --- |
 | `skill-cards` | Writes and tightens agent skills: a description that fires on the right request, a few numbered steps, Python scripts for rules a program can decide, and its `check_card.py` for spec errors and bloat. |
-| `session-titles` | Prefixes each chat's title with where it runs (💻 local, ☁️ cloud), its Ship ref (after its fleet's emoji, when it has one) and, once the work is known, its commit type, such as `☁️ 🚀 SHIP-12 fix: Login loop`. Its `title.py` owns the format. |
+| `session-titles` | Prefixes an Actionfleet chat's title with where it runs (💻 local, ☁️ cloud), its Ship ref (after its fleet's emoji, when it has one) and, once the work is known, its commit type, such as `☁️ 🚀 SHIP-12 fix: Login loop`. Its `title.py` owns the format. |
 | `commit-messages` | Writes and checks commit messages as [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`type(scope)!: summary`, body, trailers), following each repository's own identity and trailer policy. Its `commit.py` owns the format and the types, and also runs as a commit-msg hook. |
 
 Each line installs from this GitHub repository and works whether or not the
 marketplace was added before; the update step brings an older copy up to date.
-Replace `skill-cards` with the add-on you want.
 
 ```sh
-claude plugin marketplace add actionfleetai/actionfleet-plugin; claude plugin marketplace update actionfleet && claude plugin install skill-cards@actionfleet
+claude plugin marketplace add actionfleetai/actionfleet-plugin; claude plugin marketplace update actionfleet && claude plugin install extras@actionfleet
 ```
 
 ```sh
-codex plugin marketplace add actionfleetai/actionfleet-plugin; codex plugin marketplace upgrade actionfleet && codex plugin add skill-cards@actionfleet
+codex plugin marketplace add actionfleetai/actionfleet-plugin; codex plugin marketplace upgrade actionfleet && codex plugin add extras@actionfleet
 ```
 
 ```sh
-copilot plugin marketplace add actionfleetai/actionfleet-plugin && copilot plugin install skill-cards@actionfleet
+copilot plugin marketplace add actionfleetai/actionfleet-plugin && copilot plugin install extras@actionfleet
 ```
 
-In an open Claude Code session, run `/reload-plugins`; the skill is
-`/skill-cards:skill-cards`. An add-on stays on the version you installed until the
-marketplace refreshes ([updates and auto-update](#updates-and-auto-update)). If Claude says the marketplace's source doesn't match its
-`extraKnownMarketplaces` entry, add it from the source that entry lists, or change the
-entry to `{"source": "github", "repo": "actionfleetai/actionfleet-plugin"}`. In Cursor,
-install **Skill Cards** from the imported team marketplace; an admin who sets it to
+In an open Claude Code session, run `/reload-plugins`; the skills are
+`/extras:skill-cards`, `/extras:session-titles` and `/extras:commit-messages`. The plugin
+stays on the version you installed until the marketplace refreshes
+([updates and auto-update](#updates-and-auto-update)). Before November 2026 these were
+three plugins; Claude reports each as "not found in marketplace" until it is removed
+(`uninstall` takes one plugin at a time):
+
+```sh
+for p in skill-cards session-titles commit-messages; do claude plugin uninstall $p@actionfleet; done
+```
+
+Codex: the same loop with `codex plugin remove $p@actionfleet`.
+
+If Claude says the marketplace's source doesn't match its `extraKnownMarketplaces`
+entry, add it from the source that entry lists, or change the entry to
+`{"source": "github", "repo": "actionfleetai/actionfleet-plugin"}`. In Cursor, install
+**Actionfleet Extras** from the imported team marketplace; an admin who sets it to
 **Default Off** leaves each member to opt in. Without a team marketplace, copy
-`packages/<add-on>` into `~/.cursor/plugins/local/<add-on>` as a real folder and
-reload the window. GitHub Copilot in VS Code reads marketplaces from
-`chat.plugins.marketplaces` (with `chat.plugins.enabled`); that path is not yet checked.
-A plugin installed on one computer doesn't reach claude.ai/code cloud sessions or
-Codex cloud tasks. An organization can turn an add-on on for every claude.ai/code
-session through claude.ai's managed Claude Code settings, but that enables it for
-everyone, so it is no longer opt-in.
+`packages/extras` into `~/.cursor/plugins/local/extras` as a real folder and reload the
+window. GitHub Copilot in VS Code reads marketplaces from `chat.plugins.marketplaces`
+(with `chat.plugins.enabled`); that path is not yet checked. A plugin installed on one
+computer doesn't reach claude.ai/code cloud sessions or Codex cloud tasks. An
+organization can turn `extras` on for every claude.ai/code session through claude.ai's
+managed Claude Code settings, but that enables it for everyone, so it is no longer
+opt-in.
 
 ## What updates, and when
 
@@ -203,10 +215,10 @@ confirm the installed version before claiming the session uses new skills.
 Claude Code updates a plugin only after it refreshes its copy of the marketplace, and
 it leaves auto-update off for third-party marketplaces such as this one. Until then
 `/plugin` shows the version you installed, with **Update** greyed out, even after a
-newer release. To update now (replace `skill-cards` with the plugin):
+newer release. To update now:
 
 ```sh
-claude plugin marketplace update actionfleet && claude plugin update skill-cards@actionfleet
+claude plugin marketplace update actionfleet && claude plugin update extras@actionfleet
 ```
 
 Then run `/reload-plugins` or start a new session. To keep plugins current, turn on
@@ -246,8 +258,8 @@ source_type = "git"
 source = "https://github.com/actionfleetai/actionfleet-plugin.git"
 ```
 
-Declaring the marketplace installs nothing in either host, so add-ons stay opt-in. Each
-plugin keeps the version of the release where it last changed, so an add-on can show an
+Declaring the marketplace installs nothing in either host, so `extras` stays opt-in. Each
+plugin keeps the version of the release where it last changed, so a plugin can show an
 older version than the newest release; each release's notes list the plugins it changed.
 
 Do not recreate OAuth connections for ordinary deployments. A future custom
@@ -274,8 +286,8 @@ retain the labels recorded when those events happened.
 
 ## Build, verify and release
 
-`plugins/actionfleet/` is the core plugin's skill source; each add-on's is
-`plugins/<add-on>/`, with its reviewed files listed in `ADDONS` in `scripts/build.py`.
+`plugins/actionfleet/` is the core plugin's skill source; `plugins/extras/` is the
+opt-in skills', with its reviewed files listed in `ADDONS` in `scripts/build.py`.
 Each plugin keeps the version of the release where its package last changed, so hosts
 offer an update only for plugins that changed. `profiles.json` declares the
 environment endpoints and availability. Generate the tracked `packages/` and
@@ -300,10 +312,10 @@ Anthropic's directory listing; Claude Code ignores it).
 `python3 scripts/check_codex_package.py` asks a real Codex (`codex app-server`,
 throwaway `CODEX_HOME`, no sign-in) what it loads from each package and fails
 unless its one MCP server, the three skills, the onboarding skill and its icon appear, and
-unless each add-on loads its skills and icon with no MCP server; CI runs
+unless `extras` loads its skills and icon with no MCP server; CI runs
 it with a pinned Codex. Never hand-edit generated packages.
 
-Commit subjects are Conventional Commits (`commit-messages` add-on;
+Commit subjects are Conventional Commits (the `commit-messages` skill in `extras`;
 `git config core.hooksPath .githooks` checks each one as you commit). To land, run
 `python3 scripts/land.py`: it rebases on main, checks commits not yet pushed anywhere,
 allocates a release only when a package changed (`release_version.py bump` sets that

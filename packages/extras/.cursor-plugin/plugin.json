@@ -1,7 +1,7 @@
 {
-  "name": "skill-cards",
-  "version": "2026.1103.2",
-  "description": "Opt-in Actionfleet skill: write and tighten agent skills that are short and run the same way every time.",
+  "name": "extras",
+  "version": "2026.1103.3",
+  "description": "Opt-in Actionfleet skills: write and tighten agent skills, title chats with their Ship, write Conventional Commits.",
   "author": {
     "name": "Actionfleet",
     "url": "https://actionfleet.ai"
@@ -11,9 +11,10 @@
   "license": "MIT",
   "keywords": [
     "skills",
-    "runbook",
-    "sop"
+    "commits",
+    "conventional-commits",
+    "titles"
   ],
-  "displayName": "Skill Cards",
+  "displayName": "Actionfleet Extras",
   "logo": "assets/icon.png"
 }

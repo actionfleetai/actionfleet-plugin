@@ -14,10 +14,10 @@ Titles this chat `<place> <emoji> <ref> <type>: <rest>`, for example `☁️ �
 | --- | --- | --- |
 | harness | the `harness` this session passed to `bootstrap` | SKIPPED |
 | ship | `head.ship.ref` of the Ship this chat crewed or opened with `crew=true`, or the person's words | leave `--ship` out |
-| convoy | the parent's `head.ship.ref` (`get_ship` on `snapshot.parent_ship`), only when this chat works several Ships under it | leave `--convoy` out |
+| convoy | the parent Ship's `head.ship.ref` (read the Ship `snapshot.parent_ship` names), only when this chat works several child Ships under it | leave `--convoy` out |
 | title | this chat's current title | leave `--title` out |
 | objective | the Ship's objective | leave `--objective` out |
-| emoji | `head.ship.emoji` of the Ship whose ref the title shows (`get_ship`; set when its fleet has one) | leave `--emoji` out |
+| emoji | `head.ship.emoji` of the Ship whose ref the title shows (in that Ship's read; set when its fleet has one) | leave `--emoji` out |
 | type | the chat's main change, matched to a type in `title.py --rules`, once the work is known | leave `--type` out |
 
 ## Rules

@@ -9,10 +9,13 @@ from skills import skill_tools, snapshot
 PROFILE = {'channel': 'dev', 'mcp_url': 'https://dev.example.com/mcp', 'installable': True}
 
 
-def responses(issuer='https://dev.example.com', private_status=401, tools=None, minimum=None):
+def responses(issuer='https://dev.example.com', private_status=401, tools=None, minimum=None, listed=None):
+    """listed=False serves a catalog from before `listed`."""
     known = snapshot()
     catalog = {'protocol': 'actionfleet/2', 'tools': known['tools'] if tools is None else tools,
                'guides': known['guides'], 'plugin_minimum': minimum or known['plugin_minimum']}
+    if listed is not False:
+        catalog['listed'] = known['listed'] if listed is None else listed
 
     def fetch(url, payload=None):
         if url.endswith('/oauth-authorization-server'):
@@ -49,6 +52,22 @@ class EndpointContractTests(unittest.TestCase):
         added = probe(PROFILE, responses(tools=snapshot()['tools'] + ['new_tool']))
         self.assertTrue(added['anonymous_contract_ready'])
         self.assertFalse(added['catalog']['snapshot_current'])
+
+    def test_fails_when_the_live_server_stops_listing_a_tool_the_skills_call(self):
+        ready = probe(PROFILE, responses())
+        self.assertTrue(ready['checks']['catalog_lists_skill_tools'])
+        self.assertEqual(ready['catalog']['unlisted_tools'], [])
+        # Served, but reached only through execute: a skill calling it directly is out of date.
+        hidden = sorted(skill_tools())[-1]
+        unlisted = probe(PROFILE, responses(listed=[t for t in snapshot()['listed'] if t != hidden]))
+        self.assertFalse(unlisted['checks']['catalog_lists_skill_tools'])
+        self.assertFalse(unlisted['anonymous_contract_ready'])
+        self.assertEqual(unlisted['catalog']['unlisted_tools'], [hidden])
+        # A server from before `listed` is checked against its tools alone.
+        older = probe(PROFILE, responses(listed=False))
+        self.assertTrue(older['anonymous_contract_ready'])
+        self.assertIsNone(older['catalog']['unlisted_tools'])
+        self.assertFalse(older['catalog']['snapshot_current'])
 
     def test_unconfigured_profile_has_explicit_failure_without_claiming_native_acceptance(self):
         result = probe({'channel': 'prod', 'mcp_url': 'https://prod.example.com/mcp', 'installable': False},

@@ -2,7 +2,8 @@
 """Bounded anonymous endpoint contracts. No registration, consent or Ship writes.
 
 Besides OAuth discovery, the public onboarding bootstrap returns the server's tool catalog: an installable
-profile fails when the live server lacks a tool the skills name or needs a newer plugin than this one."""
+profile fails when the live server lacks a tool the skills name, no longer lists one directly (catalog `listed`; an
+older server without it is checked against `tools` alone) or needs a newer plugin than this one."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -65,6 +66,7 @@ def probe(profile, fetch=read, *, plugin_version=None, needed=None, known=None):
     result = (public.get('json') or {}).get('result') or {}
     live = (result.get('structuredContent') or {}).get('catalog') or {}
     tools = set(live.get('tools') or [])
+    listed = live.get('listed')  # None from a server that predates it.
     minimum = parse_version(live.get('plugin_minimum'))
     checks = {
         'oauth_discovery': auth['status'] == 200 and str(meta.get('issuer', '')).rstrip('/') == origin,
@@ -76,7 +78,8 @@ def probe(profile, fetch=read, *, plugin_version=None, needed=None, known=None):
         'private_requires_oauth': protected['status'] == 401 and
                                   'resource_metadata=' in protected.get('challenge', ''),
         'catalog_has_skill_tools': bool(tools) and set(needed) <= tools,
-        'plugin_meets_server_minimum': minimum is not None and parse_version(plugin_version) >= minimum,
+        'catalog_lists_skill_tools': listed is None or set(needed) <= set(listed),
+        'plugin_meets_server_minimum':minimum is not None and parse_version(plugin_version) >= minimum,
     }
     return {'channel': profile['channel'], 'endpoint': profile['mcp_url'],
             'installable': profile['installable'], 'anonymous_contract_ready': all(checks.values()),
@@ -84,8 +87,10 @@ def probe(profile, fetch=read, *, plugin_version=None, needed=None, known=None):
                                      'resource': resource['status'], 'private': protected['status'], 'public': public['status']},
             'catalog': {'plugin_version': plugin_version, 'plugin_minimum': live.get('plugin_minimum'),
                         'missing_tools': sorted(set(needed) - tools),
+                        'unlisted_tools': None if listed is None else sorted(set(needed) - set(listed)),
                         # Informational: refresh server-tools.json when the server's tools change.
-                        'snapshot_current': sorted(tools) == sorted(known['tools']) and live.get('plugin_minimum') == known['plugin_minimum']},
+                        'snapshot_current': sorted(tools) == sorted(known['tools']) and sorted(listed or []) == sorted(known['listed'])
+                                            and live.get('plugin_minimum') == known['plugin_minimum']},
             'native_consent_tested': False}
 
 

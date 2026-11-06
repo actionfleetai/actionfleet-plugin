@@ -9,13 +9,13 @@
       "name": "actionfleet-dev",
       "source": "./packages/actionfleet-dev",
       "description": "Actionfleet task coordination: Actionfleet Dev",
-      "version": "2026.1103.1"
+      "version": "2026.1105.1"
     },
     {
       "name": "extras",
       "source": "./packages/extras",
       "description": "Opt-in Actionfleet skills: write and tighten agent skills, title chats with their Ship, write Conventional Commits.",
-      "version": "2026.1104.1"
+      "version": "2026.1105.1"
     }
   ]
 }

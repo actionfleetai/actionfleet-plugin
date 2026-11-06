@@ -9,8 +9,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'plugins/actionfleet'
-FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md',
-         'skills/coordinate/SKILL.md', 'skills/work-task/references/tool-guide.md'}
+# The skills name only bootstrap and get_guide and defer to the server's guides, so no tool list is packaged.
+FILES = {'plugin.json', 'skills/setup/SKILL.md', 'skills/work-task/SKILL.md', 'skills/coordinate/SKILL.md'}
 ICON = 'assets/icon.png'  # Each profile's render of icons/ship.svg (scripts/icons.py).
 # Opt-in add-ons: one plugin per skill, so each host's install is the opt-in, with each add-on's reviewed files. They
 # carry no MCP server, so they are safe beside a claude.ai connector or the core plugin and never another crew device.

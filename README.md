@@ -9,17 +9,22 @@ a stopped chat or pool subscription allowances. The same marketplace offers
 
 **The MCP is the integration; this plugin is optional.** Any host that takes MCP
 servers gets everything from the MCP alone: its instructions, tool descriptions,
-bootstrap's `tool_guide` and `get_guide` (`start`, `work`, `coordinate`). The plugin
-packages that connection so a host can switch it on and off, with thin skills that
-defer to the server. Keep them in sync:
+bootstrap's `tool_guide` and `get_guide` (`start`, `work`, `coordinate`, `operate`,
+`setup`). The plugin packages that connection so a host can switch it on and off,
+with thin skills that call `bootstrap` and `get_guide` and follow the server's
+guides. They name no other tool, so the server can rename one without stranding
+them. Keep them in sync:
 
-- The setup skill passes this plugin's version to `bootstrap` (`plugin_version`);
-  `plugin.status` is `outdated` when the server needs a newer plugin. Agents then
-  follow the server and ask the user to update.
+- The skills pass this plugin's version to `bootstrap` (`plugin_version`);
+  `plugin.status` is `outdated` when the server needs a newer plugin
+  (`plugin_minimum`). Agents then follow the server and ask the user to update.
+  When a release fixes skills an older plugin gets wrong, the server raises
+  `plugin_minimum` to that release once it is published.
 - CI's endpoints job reads the live public catalog and fails when a skill names a
-  tool the server lacks or the server needs a newer plugin than this one.
-  `server-tools.json` is the offline snapshot the unit tests use; refresh it when
-  the server's tools change.
+  tool the server lacks or no longer lists directly (`listed`), or the server needs
+  a newer plugin than this one. `server-tools.json` is the offline snapshot of that
+  catalog the unit tests use; refresh it when the server's tools change (the
+  endpoints artifact's `snapshot_current` says when).
 
 ## Stable connections
 
@@ -270,10 +275,10 @@ tested OAuth migration. Current service URLs remain stable throughout that work.
 ## Use the tools
 
 Run `setup` once per new session/reconnect to bootstrap with this plugin's version.
-`work-task` and `coordinate` are short forms of the server's `get_guide` topics
-`work` and `coordinate`: crew, checkpoint and report Ships; open Convoys, delegate
-to a child Ship and message related Ships through tunnels. Where a skill and the
-server differ, the server wins. Preserve claim/STOP checks and human verification of
+`work-task` and `coordinate` hand over to the server's `get_guide` topics `work`
+and `coordinate` (and `operate` for leads): crew, checkpoint and report Ships; open
+child Ships under a parent Ship, delegate to a child Ship and message the crews of
+related Ships. Where a skill and the server differ, the server wins. Preserve claim/STOP checks and human verification of
 an exact report. GitHub is source/CI, not Fleet's coordination queue. Normal chat
 questions do not need a Ship.
 

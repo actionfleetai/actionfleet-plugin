@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""The tools the public skills name, for checks against the server's catalog (server-tools.json and the live public bootstrap)."""
+"""The tools the public skills name, for checks against the server's catalog (server-tools.json and the live public bootstrap).
+
+The skills name only the start tools, which every session lists directly, and leave every other tool to the server's
+guides (get_guide), so renaming a tool on the server cannot strand them."""
 import json
 from pathlib import Path
 import re
@@ -18,6 +21,8 @@ TOOL_WORDS = {'add', 'block', 'bootstrap', 'crew', 'dispatch', 'get', 'list', 'n
 NOT_TOOLS = {'request_id', 'report_id'}
 # Code Mode's own discovery tools: every Code Mode server has them, so the Fleet catalog does not list them.
 CODE_MODE = {'get_tags', 'search', 'get_schema', 'execute'}
+# The only server tools a skill names: bootstrap (with plugin_version) and get_guide, whose guides name the rest.
+START = {'bootstrap', 'get_guide'}
 
 
 def texts(source=SOURCE):
@@ -40,10 +45,20 @@ def removed_named(source=SOURCE):
     return sorted({name for text in texts(source).values() for name in REMOVED if re.search(rf'\b{name}\b', text)})
 
 
+def mentioned(tools, source=SOURCE):
+    """The given server tools a skill mentions anywhere, backticked or not. One-word names other than whoami (ships,
+    utils) read as prose, so they are left out."""
+    words = {name for name in tools if '_' in name or name == 'whoami'}
+    return sorted({name for text in texts(source).values() for name in words if re.search(rf'\b{name}\b', text)})
+
+
 def snapshot(path=SNAPSHOT):
+    """The server's public catalog as last refreshed: protocol, plugin_minimum, guides, listed (the tools a session
+    lists directly) and tools (every tool it serves)."""
     data = json.loads(path.read_text())
-    if data.get('protocol') != 'actionfleet/2' or not data.get('tools') or not data.get('plugin_minimum'):
-        raise ValueError('server-tools.json needs protocol actionfleet/2, tools and plugin_minimum.')
+    if (data.get('protocol') != 'actionfleet/2' or not data.get('tools') or not data.get('listed')
+            or not data.get('plugin_minimum')):
+        raise ValueError('server-tools.json needs protocol actionfleet/2, tools, listed and plugin_minimum.')
     return data
 
 
@@ -54,4 +69,5 @@ def version(value):
 
 
 if __name__ == '__main__':
-    print(json.dumps({'skill_tools': sorted(skill_tools()), 'removed_named': removed_named()}, indent=2))
+    print(json.dumps({'skill_tools': sorted(skill_tools()), 'removed_named': removed_named(),
+                      'server_tools_mentioned': mentioned(snapshot()['tools'])}, indent=2))
